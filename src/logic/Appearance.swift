@@ -19,7 +19,7 @@ class Appearance {
     static var maxHeightOnScreen = CGFloat(0.8)
 
     // theme
-    static var material = NSVisualEffectView.Material.dark
+    static var material = NSVisualEffectView.Material.hudWindow
     static var fontColor = NSColor.white
     static var indicatedIconShadowColor: NSColor? = .darkGray
     static var titleShadowColor: NSColor? = .darkGray
@@ -153,10 +153,10 @@ class Appearance {
         titleShadowColor = nil
         indicatedIconShadowColor = nil
         imageShadowColor = .lightGray.withAlphaComponent(0.4)
-        highlightMaterial = .mediumLight
+        highlightMaterial = .selection
         switch currentVisibility {
             case .normal:
-                material = .light
+            material = .hudWindow
                 highlightFocusedBackgroundColor = .lightGray.withAlphaComponent(0.7)
                 highlightHoveredBackgroundColor = .lightGray.withAlphaComponent(0.5)
                 enablePanelShadow = false
@@ -167,7 +167,7 @@ class Appearance {
                 highlightBorderShadowColor = NSColor.clear
                 highlightBorderWidth = 0
             case .high:
-                material = .mediumLight
+            material = .hudWindow
                 highlightFocusedBackgroundColor = .lightGray.withAlphaComponent(0.7)
                 highlightHoveredBackgroundColor = .lightGray.withAlphaComponent(0.5)
                 enablePanelShadow = true
@@ -178,7 +178,7 @@ class Appearance {
                 highlightBorderShadowColor = .black.withAlphaComponent(0.5)
                 highlightBorderWidth = 1
             case .highest:
-                material = .mediumLight
+            material = .hudWindow
                 highlightFocusedBackgroundColor = .lightGray.withAlphaComponent(0.4)
                 highlightHoveredBackgroundColor = .lightGray.withAlphaComponent(0.3)
                 enablePanelShadow = true
@@ -195,10 +195,10 @@ class Appearance {
         fontColor = .white.withAlphaComponent(0.9)
         indicatedIconShadowColor = .darkGray
         titleShadowColor = .darkGray
-        highlightMaterial = .ultraDark
+        highlightMaterial = .selection
         switch currentVisibility {
             case .normal:
-                material = .dark
+            material = .hudWindow
                 imageShadowColor = .gray.withAlphaComponent(0.8)
                 highlightFocusedBackgroundColor = .black.withAlphaComponent(0.6)
                 highlightHoveredBackgroundColor = .black.withAlphaComponent(0.5)
@@ -210,7 +210,7 @@ class Appearance {
                 highlightBorderShadowColor = NSColor.clear
                 highlightBorderWidth = 0
             case .high:
-                material = .ultraDark
+            material = .hudWindow
                 imageShadowColor = .gray.withAlphaComponent(0.4)
                 highlightFocusedBackgroundColor = .gray.withAlphaComponent(0.6)
                 highlightHoveredBackgroundColor = .gray.withAlphaComponent(0.4)
@@ -222,7 +222,7 @@ class Appearance {
                 highlightBorderShadowColor = .white.withAlphaComponent(0.5)
                 highlightBorderWidth = 1
             case .highest:
-                material = .ultraDark
+            material = .hudWindow
                 imageShadowColor = .gray.withAlphaComponent(0.4)
                 highlightFocusedBackgroundColor = .black.withAlphaComponent(0.4)
                 highlightHoveredBackgroundColor = .black.withAlphaComponent(0.2)

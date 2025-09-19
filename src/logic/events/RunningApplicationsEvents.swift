@@ -6,7 +6,11 @@ class RunningApplicationsEvents {
 
     static func observe() {
         previousValueOfRunningApps = Set(NSWorkspace.shared.runningApplications)
-        appsObserver = NSWorkspace.shared.observe(\.runningApplications, options: [.old, .new], changeHandler: handleEvent)
+        appsObserver = NSWorkspace.shared.observe(\.runningApplications, options: [.old, .new]) { workspace, change in
+            DispatchQueue.main.async {
+                handleEvent(workspace, change)
+            }
+        }
     }
 
     private static func handleEvent<A>(_: NSWorkspace, _ change: NSKeyValueObservedChange<A>) {
