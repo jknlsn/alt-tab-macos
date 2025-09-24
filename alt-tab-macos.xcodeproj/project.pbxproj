@@ -3438,6 +3438,9 @@
 			baseConfigurationReference = D04BA62D5EACAAAD7BCD3E79 /* release.xcconfig */;
 			buildSettings = {
 				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "-";
+				CURRENT_PROJECT_VERSION = LOCAL;
+				INFOPLIST_KEY_CFBundleDisplayName = AltTab;
+				MARKETING_VERSION = LOCAL;
 			};
 			name = Release;
 		};
@@ -3446,6 +3449,9 @@
 			baseConfigurationReference = D04BA1232AFEEFE90D5CC827 /* debug.xcconfig */;
 			buildSettings = {
 				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "-";
+				CURRENT_PROJECT_VERSION = LOCAL;
+				INFOPLIST_KEY_CFBundleDisplayName = AltTab;
+				MARKETING_VERSION = LOCAL;
 			};
 			name = Debug;
 		};
