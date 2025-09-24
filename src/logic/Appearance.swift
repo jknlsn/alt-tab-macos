@@ -8,7 +8,7 @@ class Appearance {
     static var appIconLabelSpacing = CGFloat(2)
     static var edgeInsetsSize = CGFloat(5)
     static var cellCornerRadius = CGFloat(10)
-    static var windowCornerRadius = CGFloat(23)
+    static var windowCornerRadius = CGFloat(35)
     static var hideThumbnails = Bool(false)
     static var rowsCount = CGFloat(0)
     static var windowMinWidthInRow = CGFloat(0)
@@ -76,10 +76,10 @@ class Appearance {
 
     private static func thumbnailsSize(_ isHorizontalScreen: Bool) {
         hideThumbnails = false
-        windowPadding = 18
-        cellCornerRadius = 10
-        windowCornerRadius = 23
-        edgeInsetsSize = 12
+        windowPadding = 3
+        cellCornerRadius = 33
+        windowCornerRadius = 36
+        edgeInsetsSize = 4
         switch currentSize {
             case .small:
                 rowsCount = isHorizontalScreen ? 5 : 8
@@ -97,17 +97,18 @@ class Appearance {
         let thumbnailsPanelRatio = (NSScreen.preferred.frame.width * maxWidthOnScreen) / (NSScreen.preferred.frame.height * maxHeightOnScreen)
         (windowMinWidthInRow, windowMaxWidthInRow) = AppearanceTestable.goodValuesForThumbnailsWidthMinMax(thumbnailsPanelRatio, rowsCount)
         if currentVisibility == .highest {
-            edgeInsetsSize = 10
-            cellCornerRadius = 12
+            // TODO: what is this?
+            edgeInsetsSize = 2
+            cellCornerRadius = 24
         }
     }
 
     private static func appIconsSize() {
         hideThumbnails = true
-        windowPadding = 25
-        cellCornerRadius = 10
-        windowCornerRadius = 23
-        edgeInsetsSize = 5
+        cellCornerRadius = 33
+        windowCornerRadius = 36
+        windowPadding = 3
+        edgeInsetsSize = 4
         windowMinWidthInRow = 0.04
         windowMaxWidthInRow = 0.3
         rowsCount = 1
@@ -129,7 +130,7 @@ class Appearance {
         hideThumbnails = true
         windowPadding = 18
         cellCornerRadius = 10
-        windowCornerRadius = 23
+        windowCornerRadius = 36
         edgeInsetsSize = 7
         maxWidthOnScreen = isHorizontalScreen ? 0.6 : 0.8
         windowMinWidthInRow = 0.6
