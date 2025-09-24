@@ -194,6 +194,7 @@ class ThumbnailView: FlippedView {
             let glassView = NSGlassEffectView()
             // No explicit styling - just regular glass effect
             glassView.style = .regular
+            glassView.tintColor = .underPageBackgroundColor.withAlphaComponent(0.8)
             glassView.cornerRadius = Appearance.cellCornerRadius
             backgroundEffectView = glassView
         } else {
@@ -315,7 +316,7 @@ class ThumbnailView: FlippedView {
 
         // Update corner radius if using glass effect
         if #available(macOS 16.0, *) {
-            (backgroundEffectView as? NSGlassEffectView)?.cornerRadius = min(Appearance.cellCornerRadius, backgroundWidth / 2)
+            (backgroundEffectView as? NSGlassEffectView)?.cornerRadius = backgroundWidth * 0.285
         }
     }
 

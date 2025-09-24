@@ -6,7 +6,7 @@ class BackgroundView: NSView {
     override init(frame frameRect: NSRect) {
         if #available(macOS 16.0, *) {
             let glassView = NSGlassEffectView()
-            glassView.tintColor = .underPageBackgroundColor.withAlphaComponent(0.5)
+            glassView.tintColor = .underPageBackgroundColor.withAlphaComponent(0.4)
             glassView.style = .clear
             backgroundView = glassView
         } else {

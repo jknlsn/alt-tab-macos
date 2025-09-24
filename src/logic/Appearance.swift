@@ -2,13 +2,13 @@ import Cocoa
 
 class Appearance {
     // size
-    static var windowPadding = CGFloat(18)
+    static var windowPadding = CGFloat(12)
     static var interCellPadding = CGFloat(1)
-    static var intraCellPadding = CGFloat(5)
-    static var appIconLabelSpacing = CGFloat(2)
+    static var intraCellPadding = CGFloat(2.5)
+    static var appIconLabelSpacing = CGFloat(16)
     static var edgeInsetsSize = CGFloat(5)
-    static var cellCornerRadius = CGFloat(10)
-    static var windowCornerRadius = CGFloat(35)
+    static var cellCornerRadius = CGFloat(40)
+    static var windowCornerRadius = CGFloat(50)
     static var hideThumbnails = Bool(false)
     static var rowsCount = CGFloat(0)
     static var windowMinWidthInRow = CGFloat(0)
@@ -36,7 +36,7 @@ class Appearance {
     static var enablePanelShadow = false
 
     // derived
-    static var font: NSFont { NSFont.systemFont(ofSize: fontHeight) }
+    static var font: NSFont { NSFont.systemFont(ofSize: fontHeight, weight: .semibold) }
 
     private static var currentStyle: AppearanceStylePreference { Preferences.appearanceStyle }
     private static var currentSize: AppearanceSizePreference { Preferences.appearanceSize }
@@ -76,10 +76,10 @@ class Appearance {
 
     private static func thumbnailsSize(_ isHorizontalScreen: Bool) {
         hideThumbnails = false
-        windowPadding = 3
-        cellCornerRadius = 33
-        windowCornerRadius = 36
-        edgeInsetsSize = 4
+//        windowPadding = 10
+//        cellCornerRadius = 60
+//        windowCornerRadius = 60
+//        edgeInsetsSize = 12
         switch currentSize {
             case .small:
                 rowsCount = isHorizontalScreen ? 5 : 8
@@ -96,19 +96,17 @@ class Appearance {
         }
         let thumbnailsPanelRatio = (NSScreen.preferred.frame.width * maxWidthOnScreen) / (NSScreen.preferred.frame.height * maxHeightOnScreen)
         (windowMinWidthInRow, windowMaxWidthInRow) = AppearanceTestable.goodValuesForThumbnailsWidthMinMax(thumbnailsPanelRatio, rowsCount)
-        if currentVisibility == .highest {
-            // TODO: what is this?
-            edgeInsetsSize = 2
-            cellCornerRadius = 24
-        }
+//        if currentVisibility == .highest {
+//            edgeInsetsSize = 10
+//            cellCornerRadius = 12
+//        }
     }
 
     private static func appIconsSize() {
         hideThumbnails = true
-        cellCornerRadius = 33
-        windowCornerRadius = 36
-        windowPadding = 3
-        edgeInsetsSize = 4
+        windowPadding = 20
+        windowCornerRadius = 50
+        edgeInsetsSize = 12
         windowMinWidthInRow = 0.04
         windowMaxWidthInRow = 0.3
         rowsCount = 1
@@ -128,10 +126,10 @@ class Appearance {
 
     private static func titlesSize(_ isHorizontalScreen: Bool) {
         hideThumbnails = true
-        windowPadding = 18
+        windowPadding = 20
         cellCornerRadius = 10
-        windowCornerRadius = 36
-        edgeInsetsSize = 7
+        windowCornerRadius = 50
+        edgeInsetsSize = 9
         maxWidthOnScreen = isHorizontalScreen ? 0.6 : 0.8
         windowMinWidthInRow = 0.6
         windowMaxWidthInRow = 0.9
