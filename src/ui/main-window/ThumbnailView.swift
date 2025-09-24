@@ -277,10 +277,12 @@ class ThumbnailView: FlippedView {
             }
         }
     }
+    
+    private static let labelWidthMultiple: CGFloat = 4 // 2 previously
 
     private func getMaxAllowedLabelWidth(_ view: ThumbnailView) -> CGFloat {
         let viewWidth = view.frame.width
-        let maxAllowedWidth = min(viewWidth * 2, ThumbnailsView.thumbnailsWidth)
+        let maxAllowedWidth = min(viewWidth * Self.labelWidthMultiple, ThumbnailsView.thumbnailsWidth)
         let availableLeftWidth = view.isFirstInRow ? 0 : CGFloat(view.indexInRow) * viewWidth
         let availableRightWidth = view.isLastInRow ? 0 : CGFloat(view.numberOfViewsInRow - 1 - view.indexInRow) * viewWidth
         let totalWidth = availableLeftWidth + availableRightWidth + viewWidth
