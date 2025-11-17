@@ -1940,7 +1940,6 @@
 				D04BA82F32FB183F65DC3E42 /* Frameworks */,
 				D04BA96F3DC99263120BCD21 /* Resources */,
 				7641B7923B36478FBF4D7CCD /* [CP] Embed Pods Frameworks */,
-				48B68D6C23F6412C009BF4AD /* ShellScript */,
 			);
 			buildRules = (
 			);
@@ -1959,6 +1958,12 @@
 			attributes = {
 				LastUpgradeCheck = 1620;
 				ORGANIZATIONNAME = lwouis;
+				TargetAttributes = {
+					D04BA5E73DAF232ADE11C97A = {
+						DevelopmentTeam = FL3R79336R;
+						ProvisioningStyle = Automatic;
+					};
+				};
 			};
 			buildConfigurationList = D04BA83C9495F252D87CDF0F /* Build configuration list for PBXProject "alt-tab-macos" */;
 			compatibilityVersion = "Xcode 3.2";
@@ -2223,24 +2228,6 @@
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXShellScriptBuildPhase section */
-		48B68D6C23F6412C009BF4AD /* ShellScript */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputFileListPaths = (
-			);
-			inputPaths = (
-			);
-			outputFileListPaths = (
-			);
-			outputPaths = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "scripts/codesign/codesign_sparkle_embedded_apps.sh\n";
-			showEnvVarsInLog = 0;
-		};
 		5968B81A43F20B6ECD92C7F7 /* [CP] Check Pods Manifest.lock */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
@@ -3437,10 +3424,14 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = D04BA62D5EACAAAD7BCD3E79 /* release.xcconfig */;
 			buildSettings = {
-				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "-";
+				CODE_SIGN_IDENTITY = "Apple Development";
+				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = LOCAL;
+				DEVELOPMENT_TEAM = FL3R79336R;
 				INFOPLIST_KEY_CFBundleDisplayName = AltTab;
 				MARKETING_VERSION = LOCAL;
+				PRODUCT_BUNDLE_IDENTIFIER = "com.smallcolossus.alt-tab-macos";
+				PROVISIONING_PROFILE_SPECIFIER = "";
 			};
 			name = Release;
 		};
@@ -3448,10 +3439,14 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = D04BA1232AFEEFE90D5CC827 /* debug.xcconfig */;
 			buildSettings = {
-				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "-";
+				CODE_SIGN_IDENTITY = "Apple Development";
+				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = LOCAL;
-				INFOPLIST_KEY_CFBundleDisplayName = AltTab;
+				DEVELOPMENT_TEAM = FL3R79336R;
+				INFOPLIST_KEY_CFBundleDisplayName = "AltTab Debug";
 				MARKETING_VERSION = LOCAL;
+				PRODUCT_BUNDLE_IDENTIFIER = "com.smallcolossus.alt-tab-macos.debug";
+				PROVISIONING_PROFILE_SPECIFIER = "";
 			};
 			name = Debug;
 		};
