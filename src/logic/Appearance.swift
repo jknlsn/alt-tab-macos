@@ -23,7 +23,7 @@ class Appearance {
     // theme
     static var fontColor = NSColor.red
     static var imagesShadowColor = NSColor.red // for icon, thumbnail and windowless images
-    static var material = NSVisualEffectView.Material.ultraDark
+    static var material = NSVisualEffectView.Material.hudWindow
     static var highlightBorderWidth = CGFloat(3)
 
     // theme: constants
@@ -173,12 +173,12 @@ class Appearance {
     private static func lightTheme() {
         fontColor = .black.withAlphaComponent(0.8)
         imagesShadowColor = .gray.withAlphaComponent(0.8)
-        material = .mediumLight
+        material = .contentBackground
     }
 
     private static func darkTheme() {
         fontColor = .white.withAlphaComponent(0.85)
         imagesShadowColor = .gray.withAlphaComponent(0.8)
-        material = .dark
+        material = .windowBackground
     }
 }
