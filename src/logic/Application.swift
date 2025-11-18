@@ -33,7 +33,7 @@ class Application: NSObject {
     private static let appIconPadding: CGFloat = {
         // Tahoe redesigned app icons. Keeping their rounded look, and reducing their size; we trim that padding
         if #available(macOS 26.0, *) {
-            return 84
+            return 0
         }
         // Big Sur redesigned app icons. A big change from square icons to rounded icons, and reducing their size; we trim that padding
         if #available(macOS 11.0, *) {

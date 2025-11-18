@@ -17,8 +17,8 @@ class Appearance {
     // size: constants
     static let maxHeightOnScreen = CGFloat(0.8)
     static let interCellPadding = CGFloat(1)
-    static let intraCellPadding = CGFloat(5)
-    static let appIconLabelSpacing = CGFloat(2)
+    static let intraCellPadding = CGFloat(2.5)
+    static let appIconLabelSpacing = CGFloat(16)
 
     // theme
     static var fontColor = NSColor.red
@@ -114,39 +114,23 @@ class Appearance {
 
     private static func appIconsSize() {
         hideThumbnails = true
-        windowPadding = 25
-        windowCornerRadius = 23
-        cellCornerRadius = 10
-        edgeInsetsSize = 5
-        if #available(macOS 26.0, *) {
-            edgeInsetsSize = 6
-        }
+        windowPadding = 32
+        windowCornerRadius = 50
+        cellCornerRadius = 40
+        edgeInsetsSize = 2
         windowMinWidthInRow = 0.04
         windowMaxWidthInRow = 0.3
         rowsCount = 1
         switch currentSize {
             case .small:
-                iconSize = 70
+                iconSize = 88
                 fontHeight = 13
-                if #available(macOS 26.0, *) {
-                    windowCornerRadius = 50
-                    cellCornerRadius = 24
-                }
             case .medium:
-                iconSize = 110
-                fontHeight = 14
-                if #available(macOS 26.0, *) {
-                    windowCornerRadius = 55
-                    cellCornerRadius = 35
-                }
+                iconSize = 128
+                fontHeight = 15
             case .large:
-                windowPadding = 28
-                iconSize = 150
-                fontHeight = 16
-                if #available(macOS 26.0, *) {
-                    windowCornerRadius = 75
-                    cellCornerRadius = 45
-                }
+                iconSize = 168
+                fontHeight = 17
         }
     }
 

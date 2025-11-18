@@ -12,7 +12,7 @@ class ThumbnailTitleView: NSTextField {
     }
 
     func fixHeight() {
-        heightAnchor.constraint(equalToConstant: fittingSize.height).isActive = true
+        heightAnchor.constraint(equalToConstant: cell!.cellSize.height).isActive = true
     }
 
     func setWidth(_ width: CGFloat) {

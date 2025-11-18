@@ -70,7 +70,7 @@ class ThumbnailFilledFontIconView: NSView {
     convenience init(_ thumbnailFontIconView: ThumbnailFontIconView, backgroundColor: NSColor, size: CGFloat) {
         self.init(frame: .zero)
         translatesAutoresizingMaskIntoConstraints = false
-        let backgroundView = ThumbnailFontIconView(symbol: .filledCircled, size: size - 3, color: backgroundColor)
+        let backgroundView = ThumbnailFontIconView(symbol: .filledCircled, size: size - 4, color: backgroundColor)
         addSubview(backgroundView)
         addSubview(thumbnailFontIconView, positioned: .above, relativeTo: nil)
         backgroundView.centerXAnchor.constraint(equalTo: thumbnailFontIconView.centerXAnchor).isActive = true
