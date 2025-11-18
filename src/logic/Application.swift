@@ -34,12 +34,15 @@ class Application: NSObject {
         guard let icon else { return nil }
         // we can render the icon quite big (e.g. windowless app icon), so we store it high-res
         let iconWidth = CGFloat(1024)
-        // NSRunningApplication.icon returns icons with padding; we remove it manually
-        let paddingToRemove = CGFloat(84)
-        let croppedSize = iconWidth - paddingToRemove * 2
-        return icon
-            .appIconFixedSize(NSSize(width: iconWidth, height: iconWidth))?
-            .cropping(to: CGRect(x: paddingToRemove, y: paddingToRemove, width: croppedSize, height: croppedSize).integral)
+        let fixedSizeIcon = icon.appIconFixedSize(NSSize(width: iconWidth, height: iconWidth))
+        // Temporarily disable the manual crop (introduced to remove padding) because it cuts off
+        // elements like the hammer in the Xcode icon. Keeping the code commented for easier revert
+        // once a better approach (e.g. dynamic padding detection) is available.
+//        let paddingToRemove = CGFloat(84)
+//        let croppedSize = iconWidth - paddingToRemove * 2
+//        return fixedSizeIcon?
+//            .cropping(to: CGRect(x: paddingToRemove, y: paddingToRemove, width: croppedSize, height: croppedSize).integral)
+        return fixedSizeIcon
     }
 
     init(_ runningApplication: NSRunningApplication) {

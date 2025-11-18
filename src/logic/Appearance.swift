@@ -17,21 +17,25 @@ class Appearance {
     // size: constants
     static let maxHeightOnScreen = CGFloat(0.8)
     static let interCellPadding = CGFloat(1)
-    static let intraCellPadding = CGFloat(5)
-    static let appIconLabelSpacing = CGFloat(2)
+    static let intraCellPadding = CGFloat(2.5)
+    static let appIconLabelSpacing = CGFloat(16)
 
     // theme
-    static var fontColor = NSColor.red
-    static var imagesShadowColor = NSColor.red // for icon, thumbnail and windowless images
     static var material = NSVisualEffectView.Material.hudWindow
-    static var highlightBorderWidth = CGFloat(3)
-
-    // theme: constants
-    static let enablePanelShadow = true
-    static var highlightFocusedBackgroundColor: NSColor { get { NSColor.systemAccentColor.withAlphaComponent(0.2) } }
-    static var highlightHoveredBackgroundColor: NSColor { get { NSColor.systemAccentColor.withAlphaComponent(0.1) } }
-    static var highlightFocusedBorderColor: NSColor { get { NSColor.systemAccentColor } }
-    static var highlightHoveredBorderColor: NSColor { get { NSColor.systemAccentColor.withAlphaComponent(0.7) } }
+    static var fontColor = NSColor.white
+    static var indicatedIconShadowColor: NSColor? = .darkGray
+    static var titleShadowColor: NSColor? = .darkGray
+    static var imageShadowColor: NSColor? = .gray // for icon, thumbnail and windowless images
+    static var highlightMaterial = NSVisualEffectView.Material.selection
+    static var highlightFocusedAlphaValue = 1.0
+    static var highlightHoveredAlphaValue = 0.8
+    static var highlightFocusedBackgroundColor = NSColor.black.withAlphaComponent(0.5)
+    static var highlightHoveredBackgroundColor = NSColor.black.withAlphaComponent(0.3)
+    static var highlightFocusedBorderColor = NSColor.clear
+    static var highlightHoveredBorderColor = NSColor.clear
+    static var highlightBorderShadowColor = NSColor.clear
+    static var highlightBorderWidth = CGFloat(0)
+    static var enablePanelShadow = false
 
     // derived
     static var font: NSFont {
@@ -69,16 +73,11 @@ class Appearance {
     }
 
     private static func updateTheme() {
-        highlightBorderWidth = currentStyle == .titles ? 2 : 3
         if currentTheme == .dark {
             darkTheme()
         } else {
             lightTheme()
         }
-        // // for Liquid Glass, we don't want a shadow around the panel
-        // if #available(macOS 26.0, *), currentStyle == .appIcons && LiquidGlassEffectView.canUsePrivateLiquidGlassLook() {
-        //     enablePanelShadow = false
-        // }
     }
 
     private static func thumbnailsSize(_ isHorizontalScreen: Bool) {
@@ -112,39 +111,23 @@ class Appearance {
 
     private static func appIconsSize() {
         hideThumbnails = true
-        windowPadding = 25
-        windowCornerRadius = 23
-        cellCornerRadius = 10
-        edgeInsetsSize = 5
-        if #available(macOS 26.0, *) {
-            edgeInsetsSize = 6
-        }
+        windowPadding = 32
+        windowCornerRadius = 50
+        cellCornerRadius = 40
+        edgeInsetsSize = 0
         windowMinWidthInRow = 0.04
         windowMaxWidthInRow = 0.3
         rowsCount = 1
         switch currentSize {
             case .small:
-                iconSize = 70
+                iconSize = 88
                 fontHeight = 13
-                if #available(macOS 26.0, *) {
-                    windowCornerRadius = 50
-                    cellCornerRadius = 24
-                }
             case .medium:
-                iconSize = 110
-                fontHeight = 14
-                if #available(macOS 26.0, *) {
-                    windowCornerRadius = 55
-                    cellCornerRadius = 35
-                }
+                iconSize = 128
+                fontHeight = 15
             case .large:
-                windowPadding = 28
-                iconSize = 150
-                fontHeight = 16
-                if #available(macOS 26.0, *) {
-                    windowCornerRadius = 75
-                    cellCornerRadius = 45
-                }
+                iconSize = 168
+                fontHeight = 17
         }
     }
 
@@ -172,13 +155,37 @@ class Appearance {
 
     private static func lightTheme() {
         fontColor = .black.withAlphaComponent(0.8)
-        imagesShadowColor = .gray.withAlphaComponent(0.8)
-        material = .contentBackground
+        titleShadowColor = nil
+        indicatedIconShadowColor = nil
+        imageShadowColor = .lightGray.withAlphaComponent(0.4)
+        highlightMaterial = .selection
+        material = .hudWindow
+        highlightFocusedBackgroundColor = .lightGray.withAlphaComponent(0.7)
+        highlightHoveredBackgroundColor = .lightGray.withAlphaComponent(0.5)
+        enablePanelShadow = false
+        highlightFocusedAlphaValue = 1.0
+        highlightHoveredAlphaValue = 0.8
+        highlightFocusedBorderColor = NSColor.clear
+        highlightHoveredBorderColor = NSColor.clear
+        highlightBorderShadowColor = NSColor.clear
+        highlightBorderWidth = 0
     }
 
     private static func darkTheme() {
-        fontColor = .white.withAlphaComponent(0.85)
-        imagesShadowColor = .gray.withAlphaComponent(0.8)
-        material = .windowBackground
+        fontColor = .white.withAlphaComponent(0.9)
+        indicatedIconShadowColor = .darkGray
+        titleShadowColor = .darkGray
+        highlightMaterial = .selection
+        material = .hudWindow
+        imageShadowColor = .gray.withAlphaComponent(0.8)
+        highlightFocusedBackgroundColor = .black.withAlphaComponent(0.6)
+        highlightHoveredBackgroundColor = .black.withAlphaComponent(0.5)
+        enablePanelShadow = false
+        highlightFocusedAlphaValue = 1.0
+        highlightHoveredAlphaValue = 0.8
+        highlightFocusedBorderColor = NSColor.clear
+        highlightHoveredBorderColor = NSColor.clear
+        highlightBorderShadowColor = NSColor.clear
+        highlightBorderWidth = 0
     }
 }

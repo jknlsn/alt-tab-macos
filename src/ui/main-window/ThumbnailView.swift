@@ -1,7 +1,8 @@
 import Cocoa
 
 class ThumbnailView: FlippedView {
-    static let noOpenWindowToolTip = NSLocalizedString("App is running but has no open window", comment: "")
+    static let noOpenWindowToolTip = NSLocalizedString(
+        "App is running but has no open window", comment: "")
     // when calculating the width of a nstextfield, somehow we need to add this suffix to get the correct width
     static let extraTextForPadding = "lmnopqrstuvw"
     var window_: Window?
@@ -9,18 +10,29 @@ class ThumbnailView: FlippedView {
     var windowlessIcon = LightImageView()
     let thumbnailContainer = FlippedView()
     var appIcon = LightImageView()
-    var label = ThumbnailTitleView(font: Appearance.font)
-    var fullscreenIcon = ThumbnailFontIconView(symbol: .circledPlusSign, tooltip: NSLocalizedString("Window is fullscreen", comment: ""))
-    var minimizedIcon = ThumbnailFontIconView(symbol: .circledMinusSign, tooltip: NSLocalizedString("Window is minimized", comment: ""))
-    var hiddenIcon = ThumbnailFontIconView(symbol: .circledSlashSign, tooltip: NSLocalizedString("App is hidden", comment: ""))
+    var label = ThumbnailTitleView(
+        shadow: ThumbnailView.makeShadow(Appearance.titleShadowColor), font: Appearance.font)
+    var fullscreenIcon = ThumbnailFontIconView(
+        symbol: .circledPlusSign, tooltip: NSLocalizedString("Window is fullscreen", comment: ""))
+    var minimizedIcon = ThumbnailFontIconView(
+        symbol: .circledMinusSign, tooltip: NSLocalizedString("Window is minimized", comment: ""))
+    var hiddenIcon = ThumbnailFontIconView(
+        symbol: .circledSlashSign, tooltip: NSLocalizedString("App is hidden", comment: ""))
     var spaceIcon = ThumbnailFontIconView(symbol: .circledNumber0)
     var dockLabelIcon = ThumbnailFilledFontIconView(
-        ThumbnailFontIconView(symbol: .filledCircledNumber0, size: dockLabelLabelSize(), color: NSColor(srgbRed: 1, green: 0.30, blue: 0.25, alpha: 1)),
+        ThumbnailFontIconView(
+            symbol: .filledCircledNumber0, size: dockLabelLabelSize(),
+            color: NSColor(srgbRed: 1, green: 0.30, blue: 0.25, alpha: 1), shadow: nil),
         backgroundColor: NSColor.white, size: dockLabelLabelSize())
     var quitIcon = TrafficLightButton(.quit, NSLocalizedString("Quit app", comment: ""))
     var closeIcon = TrafficLightButton(.close, NSLocalizedString("Close window", comment: ""))
-    var minimizeIcon = TrafficLightButton(.miniaturize, NSLocalizedString("Minimize/Deminimize window", comment: ""))
-    var maximizeIcon = TrafficLightButton(.fullscreen, NSLocalizedString("Fullscreen/Defullscreen window", comment: ""))
+    var minimizeIcon = TrafficLightButton(
+        .miniaturize, NSLocalizedString("Minimize/Deminimize window", comment: ""))
+    var maximizeIcon = TrafficLightButton(
+        .fullscreen, NSLocalizedString("Fullscreen/Defullscreen window", comment: ""))
+
+    // Glass effect background view
+    private var backgroundEffectView: NSView?
     var windowlessAppIndicator = WindowlessAppIndicator(tooltip: ThumbnailView.noOpenWindowToolTip)
 
     let hStackView = FlippedView()
@@ -36,8 +48,12 @@ class ThumbnailView: FlippedView {
     var indexInRow = 0
     var numberOfViewsInRow = 0
 
-    var windowControlIcons: [TrafficLightButton] { [quitIcon, closeIcon, minimizeIcon, maximizeIcon] }
-    var windowIndicatorIcons: [ThumbnailFontIconView] { [hiddenIcon, fullscreenIcon, minimizedIcon, spaceIcon] }
+    var windowControlIcons: [TrafficLightButton] {
+        [quitIcon, closeIcon, minimizeIcon, maximizeIcon]
+    }
+    var windowIndicatorIcons: [ThumbnailFontIconView] {
+        [hiddenIcon, fullscreenIcon, minimizedIcon, spaceIcon]
+    }
 
     var receivedMouseDown = false
 
@@ -62,12 +78,14 @@ class ThumbnailView: FlippedView {
 
     private func setDraggingTimer() {
         dragAndDropTimer?.invalidate()
-        dragAndDropTimer = Timer.scheduledTimer(withTimeInterval: 2, repeats: false, block: { _ in
-            // the user can tab to focus the next thumbnail, while still dragging. We don't want to perform drag then
-            if Windows.focusedWindowIndex == Windows.hoveredWindowIndex {
-                self.mouseUpCallback()
-            }
-        })
+        dragAndDropTimer = Timer.scheduledTimer(
+            withTimeInterval: 2, repeats: false,
+            block: { _ in
+                // the user can tab to focus the next thumbnail, while still dragging. We don't want to perform drag then
+                if Windows.focusedWindowIndex == Windows.hoveredWindowIndex {
+                    self.mouseUpCallback()
+                }
+            })
         dragAndDropTimer?.tolerance = 0.2
     }
 
@@ -81,7 +99,8 @@ class ThumbnailView: FlippedView {
         dragAndDropTimer = nil
         let urls = sender.draggingPasteboard.readObjects(forClasses: [NSURL.self]) as! [URL]
         let appUrl = window_!.application.bundleURL!
-        let open = try? NSWorkspace.shared.open(urls, withApplicationAt: appUrl, options: [], configuration: [:])
+        let open = try? NSWorkspace.shared.open(
+            urls, withApplicationAt: appUrl, options: [], configuration: [:])
         App.app.hideUi()
         return open != nil
     }
@@ -125,17 +144,23 @@ class ThumbnailView: FlippedView {
 
     func updateRecycledCellWithNewContent(_ element: Window, _ index: Int, _ newHeight: CGFloat) {
         window_ = element
+        // Ensure background effect view exists for app icons style
+        if Preferences.appearanceStyle == .appIcons && backgroundEffectView == nil {
+            setupBackgroundEffect()
+        }
         updateValues(element, index, newHeight)
         updateSizes(newHeight)
         updatePositions(newHeight)
-        label.toolTip = label.cell!.cellSize.width >= label.frame.size.width ? label.stringValue : nil
+        label.toolTip =
+            label.cell!.cellSize.width >= label.frame.size.width ? label.stringValue : nil
     }
 
     func drawHighlight() {
         let isFocused = indexInRecycledViews == Windows.focusedWindowIndex
         let isHovered = indexInRecycledViews == Windows.hoveredWindowIndex
-        setBackground(isFocused: isFocused, isHovered: isHovered)
+        updateBackgroundEffect(isFocused: isFocused, isHovered: isHovered)
         setBorder(isFocused: isFocused, isHovered: isHovered)
+        setShadow(isFocused: isFocused, isHovered: isHovered)
         if Preferences.appearanceStyle == .appIcons {
             label.isHidden = !(isFocused || isHovered)
             updateAppIconsLabel(isFocused: isFocused, isHovered: isHovered)
@@ -143,14 +168,18 @@ class ThumbnailView: FlippedView {
     }
 
     func showOrHideWindowControls(_ shouldShowWindowControls: Bool) {
-        let shouldShow = shouldShowWindowControls && !Preferences.hideColoredCircles && !Appearance.hideThumbnails
+        let shouldShow =
+            shouldShowWindowControls && !Preferences.hideColoredCircles
+            && !Appearance.hideThumbnails
         if Preferences.appearanceStyle == .thumbnails {
             isShowingWindowControls = shouldShow
             for icon in windowControlIcons {
-                icon.isHidden = !shouldShow
+                icon.isHidden =
+                    !shouldShow
                     || (icon.type == .quit && !(window_?.application.canBeQuit() ?? true))
                     || (icon.type == .close && !(window_?.canBeClosed() ?? true))
-                    || ((icon.type == .miniaturize || icon.type == .fullscreen) && !(window_?.canBeMinDeminOrFullscreened() ?? true))
+                    || ((icon.type == .miniaturize || icon.type == .fullscreen)
+                        && !(window_?.canBeMinDeminOrFullscreened() ?? true))
                 // Force the icons to redraw; otherwise after clicking the fullscreen button,
                 // it will still appear to be in fullscreen mode.
                 icon.display()
@@ -159,7 +188,9 @@ class ThumbnailView: FlippedView {
     }
 
     func updateDockLabelIcon(_ dockLabel: String?) {
-        assignIfDifferent(&dockLabelIcon.isHidden, dockLabel == nil || Preferences.hideAppBadges || Appearance.iconSize == 0)
+        assignIfDifferent(
+            &dockLabelIcon.isHidden,
+            dockLabel == nil || Preferences.hideAppBadges || Appearance.iconSize == 0)
         if !dockLabelIcon.isHidden, let dockLabel {
             let view = dockLabelIcon.subviews[1] as! ThumbnailFontIconView
             let dockLabelInt = Int(dockLabel)
@@ -176,19 +207,46 @@ class ThumbnailView: FlippedView {
         translatesAutoresizingMaskIntoConstraints = false
         setAccessibilityChildren([])
         wantsLayer = true
-        layer!.masksToBounds = false // without this, label will be clipped in app-icons style since its larger than its parentView
-        setupSharedSubviews()
+        layer!.masksToBounds = false  // without this, label will be clipped in app-icons style since its larger than its parentView
+        setupSharedSubiews()
         setupStyleSpecificSubviews()
+        setupBackgroundEffect()  // Setup after subviews are configured
     }
 
-    private func setupSharedSubviews() {
-        let shadow = ThumbnailView.makeShadow(Appearance.imagesShadowColor)
+    private func setupBackgroundEffect() {
+        // Create glass effect background for newer macOS versions
+        if #available(macOS 16.0, *) {
+            let glassView = NSGlassEffectView()
+            glassView.style = .regular
+            glassView.tintColor = .black.withAlphaComponent(0.4)  // Darker tint with more opacity for thicker appearance
+            glassView.cornerRadius = Appearance.cellCornerRadius
+            backgroundEffectView = glassView
+        } else {
+            let effectView = NSVisualEffectView()
+            effectView.material = .hudWindow  // Use hudWindow for a darker effect
+            effectView.blendingMode = .behindWindow
+            effectView.state = .active
+            backgroundEffectView = effectView
+        }
+
+        if let backgroundEffectView {
+            backgroundEffectView.wantsLayer = true
+            backgroundEffectView.layer?.masksToBounds = false  // Don't clip content
+            // Add to hStackView behind the appIcon for app icons style
+            if Preferences.appearanceStyle == .appIcons {
+                hStackView.addSubview(backgroundEffectView, positioned: .below, relativeTo: appIcon)
+            }
+            backgroundEffectView.isHidden = true
+        }
+    }
+
+    private func setupSharedSubiews() {
+        let shadow = ThumbnailView.makeShadow(Appearance.imageShadowColor)
         thumbnailContainer.wantsLayer = true
-        thumbnailContainer.layer!.masksToBounds = false // let thumbnail shadows show
+        thumbnailContainer.layer!.masksToBounds = false  // let thumbnail shadows show
         thumbnail.shadow = shadow
         windowlessIcon.shadow = shadow
         appIcon.shadow = shadow
-        dockLabelIcon.shadow = shadow
         windowlessIcon.translatesAutoresizingMaskIntoConstraints = false
         windowlessIcon.toolTip = ThumbnailView.noOpenWindowToolTip
         appIcon.translatesAutoresizingMaskIntoConstraints = false
@@ -199,6 +257,9 @@ class ThumbnailView: FlippedView {
         vStackView.layer!.borderColor = .clear
         vStackView.layer!.cornerRadius = Appearance.cellCornerRadius
         vStackView.layer!.borderWidth = CGFloat(1)
+        vStackView.layer!.masksToBounds = false  // Don't clip icons or badges
+        hStackView.wantsLayer = true
+        hStackView.layer!.masksToBounds = false  // Don't clip icons or badges
         setSubviews([vStackView])
         vStackView.setSubviews([hStackView])
         hStackView.setSubviews([appIcon])
@@ -235,8 +296,51 @@ class ThumbnailView: FlippedView {
         return NSColor.clear
     }
 
-    private func setBackground(isFocused: Bool, isHovered: Bool) {
-        vStackView.layer!.backgroundColor = getBackgroundColor(isFocused: isFocused, isHovered: isHovered).cgColor
+    private func updateBackgroundEffect(isFocused: Bool, isHovered: Bool) {
+        if Preferences.appearanceStyle == .appIcons {
+            // Ensure background effect view exists
+            if backgroundEffectView == nil {
+                setupBackgroundEffect()
+            }
+            // For app icons style, show glass effect when focused or hovered
+            if let backgroundEffectView {
+                backgroundEffectView.isHidden = !(isFocused || isHovered)
+                if !backgroundEffectView.isHidden {
+                    updateBackgroundEffectFrame()
+                }
+            }
+        } else {
+            // For other styles, hide the glass effect
+            backgroundEffectView?.isHidden = true
+        }
+
+        // Keep transparent background for vStackView
+        vStackView.layer!.backgroundColor = .clear
+    }
+
+    private func updateBackgroundEffectFrame() {
+        guard let backgroundEffectView, Preferences.appearanceStyle == .appIcons else { return }
+
+        // Make it the same size as the icon
+        let iconSize = appIcon.frame.size
+        let backgroundWidth = iconSize.width * 0.9
+        let backgroundHeight = iconSize.height * 0.9
+
+        // Position it centered on the icon
+        let xPos = appIcon.frame.origin.x - (backgroundWidth - iconSize.width) / 2
+        let yPos = appIcon.frame.origin.y - (backgroundHeight - iconSize.height) / 2
+
+        backgroundEffectView.frame = NSRect(
+            x: xPos,
+            y: yPos,
+            width: backgroundWidth,
+            height: backgroundHeight
+        )
+
+        // Update corner radius if using glass effect
+        if #available(macOS 16.0, *) {
+            (backgroundEffectView as? NSGlassEffectView)?.cornerRadius = backgroundWidth * 0.285
+        }
     }
 
     private func setBorder(isFocused: Bool, isHovered: Bool) {
@@ -249,6 +353,15 @@ class ThumbnailView: FlippedView {
         } else {
             vStackView.layer!.borderColor = NSColor.clear.cgColor
             vStackView.layer!.borderWidth = 0
+        }
+    }
+
+    private func setShadow(isFocused: Bool, isHovered: Bool) {
+        if (isFocused || isHovered) && Appearance.highlightBorderShadowColor != .clear {
+            vStackView.layer!.shadowColor = Appearance.highlightBorderShadowColor.cgColor
+            vStackView.layer!.shadowOpacity = 0.25
+            vStackView.layer!.shadowOffset = .zero
+            vStackView.layer!.shadowRadius = 1
         }
     }
 
@@ -271,14 +384,19 @@ class ThumbnailView: FlippedView {
         }
     }
 
+    private static let labelWidthMultiple: CGFloat = 4  // 2 previously
+
     private func getMaxAllowedLabelWidth(_ view: ThumbnailView) -> CGFloat {
         let viewWidth = view.frame.width
-        let maxAllowedWidth = min(viewWidth * 2, ThumbnailsView.thumbnailsWidth)
+        let maxAllowedWidth = min(
+            viewWidth * Self.labelWidthMultiple, ThumbnailsView.thumbnailsWidth)
         let availableLeftWidth = view.isFirstInRow ? 0 : CGFloat(view.indexInRow) * viewWidth
-        let availableRightWidth = view.isLastInRow ? 0 : CGFloat(view.numberOfViewsInRow - 1 - view.indexInRow) * viewWidth
+        let availableRightWidth =
+            view.isLastInRow
+            ? 0 : CGFloat(view.numberOfViewsInRow - 1 - view.indexInRow) * viewWidth
         let totalWidth = availableLeftWidth + availableRightWidth + viewWidth
         let maxLabelWidth = min(totalWidth, maxAllowedWidth)
-        return maxLabelWidth - Appearance.intraCellPadding * 2
+        return maxLabelWidth
     }
 
     private func updateAppIconsLabelFrame(_ view: ThumbnailView) {
@@ -286,33 +404,41 @@ class ThumbnailView: FlippedView {
         let labelWidth = view.label.cell!.cellSize.width
         let maxAllowedLabelWidth = getMaxAllowedLabelWidth(view)
         let effectiveLabelWidth = max(min(labelWidth, maxAllowedLabelWidth), viewWidth)
-            - (view.isFirstInRow && view.isLastInRow ? 4 : (view.isFirstInRow || view.isLastInRow ? 2 : 0)) * Appearance.intraCellPadding
-        var leftOffset = -Appearance.intraCellPadding * 2
+        var leftOffset = CGFloat(0)
         if view.isFirstInRow && view.isLastInRow {
-            leftOffset = -Appearance.intraCellPadding * 2
-
+            leftOffset = 0
         } else if view.isLastInRow {
-            leftOffset = max(0, effectiveLabelWidth - viewWidth + Appearance.intraCellPadding * 2)
+            leftOffset = max(0, effectiveLabelWidth - viewWidth)
         } else if !view.isFirstInRow && !view.isLastInRow {
             let halfNeededOffset = max(0, (effectiveLabelWidth - viewWidth) / 2)
             let availableLeftWidth = view.isFirstInRow ? 0 : CGFloat(view.indexInRow) * viewWidth
-            let availableRightWidth = view.isLastInRow ? 0 : CGFloat(view.numberOfViewsInRow - 1 - view.indexInRow) * viewWidth
+            let availableRightWidth =
+                view.isLastInRow
+                ? 0 : CGFloat(view.numberOfViewsInRow - 1 - view.indexInRow) * viewWidth
             if availableLeftWidth >= halfNeededOffset && availableRightWidth >= halfNeededOffset {
                 leftOffset = halfNeededOffset
-            } else if availableLeftWidth <= halfNeededOffset && availableRightWidth <= halfNeededOffset {
+            } else if availableLeftWidth <= halfNeededOffset
+                && availableRightWidth <= halfNeededOffset
+            {
                 leftOffset = availableLeftWidth
             } else if availableRightWidth <= halfNeededOffset {
-                leftOffset = min(effectiveLabelWidth - viewWidth - availableRightWidth, availableLeftWidth)
+                leftOffset = min(
+                    effectiveLabelWidth - viewWidth - availableRightWidth, availableLeftWidth)
             } else if availableLeftWidth <= halfNeededOffset {
                 leftOffset = availableLeftWidth
             }
         }
         let xPosition = -leftOffset
-        let height = view.label.fittingSize.height
-        let yPosition = view.hStackView.frame.origin.y + view.hStackView.frame.height + Appearance.intraCellPadding * 2
-        view.label.frame = NSRect(x: xPosition, y: yPosition, width: effectiveLabelWidth, height: height)
+        let height = view.label.cell!.cellSize.height
+        let yPosition =
+            view.hStackView.frame.origin.y + view.hStackView.frame.height + Appearance
+            .intraCellPadding * 2
+        view.label.frame = NSRect(
+            x: xPosition, y: yPosition, width: effectiveLabelWidth, height: height)
         view.label.setWidth(effectiveLabelWidth)
-        view.label.toolTip = view.label.cell!.cellSize.width >= view.label.frame.size.width ? view.label.stringValue : nil
+        view.label.toolTip =
+            view.label.cell!.cellSize.width >= view.label.frame.size.width
+            ? view.label.stringValue : nil
     }
 
     private func updateAppIcon(_ element: Window, _ title: String) {
@@ -323,16 +449,21 @@ class ThumbnailView: FlippedView {
 
     private func updateValues(_ element: Window, _ index: Int, _ newHeight: CGFloat) {
         assignIfDifferent(&thumbnail.isHidden, Appearance.hideThumbnails || element.isWindowlessApp)
-        assignIfDifferent(&windowlessIcon.isHidden, !element.isWindowlessApp || Appearance.hideThumbnails)
+        assignIfDifferent(
+            &windowlessIcon.isHidden, !element.isWindowlessApp || Appearance.hideThumbnails)
         assignIfDifferent(&windowlessAppIndicator.isHidden, !element.isWindowlessApp)
         assignIfDifferent(&hiddenIcon.isHidden, !element.isHidden || Preferences.hideStatusIcons)
-        assignIfDifferent(&fullscreenIcon.isHidden, !element.isFullscreen || Preferences.hideStatusIcons)
-        assignIfDifferent(&minimizedIcon.isHidden, !element.isMinimized || Preferences.hideStatusIcons)
-        assignIfDifferent(&spaceIcon.isHidden, element.isWindowlessApp || Spaces.isSingleSpace() || Preferences.hideSpaceNumberLabels || (
-            Preferences.spacesToShow[App.app.shortcutIndex] == .visible && (
-                NSScreen.screens.count < 2 || Preferences.screensToShow[App.app.shortcutIndex] == .showingAltTab
-            )
-        ))
+        assignIfDifferent(
+            &fullscreenIcon.isHidden, !element.isFullscreen || Preferences.hideStatusIcons)
+        assignIfDifferent(
+            &minimizedIcon.isHidden, !element.isMinimized || Preferences.hideStatusIcons)
+        assignIfDifferent(
+            &spaceIcon.isHidden,
+            element.isWindowlessApp || Spaces.isSingleSpace() || Preferences.hideSpaceNumberLabels
+                || (Preferences.spacesToShow[App.app.shortcutIndex] == .visible
+                    && (NSScreen.screens.count < 2
+                        || Preferences.screensToShow[App.app.shortcutIndex] == .showingAltTab))
+        )
         if !thumbnail.isHidden {
             if let screenshot = element.thumbnail {
                 let thumbnailSize = ThumbnailView.thumbnailSize(screenshot, false)
@@ -359,12 +490,14 @@ class ThumbnailView: FlippedView {
                 spaceIcon.toolTip = NSLocalizedString("Window is on every Space", comment: "")
             } else if let spaceIndex {
                 spaceIcon.setNumber(spaceIndex, false)
-                spaceIcon.toolTip = String(format: NSLocalizedString("Window is on Space %d", comment: ""), spaceIndex)
+                spaceIcon.toolTip = String(
+                    format: NSLocalizedString("Window is on Space %d", comment: ""), spaceIndex)
             }
         }
         updateAppIcon(element, title)
         updateDockLabelIcon(element.dockLabel)
-        setAccessibilityHelp(getAccessibilityHelp(element.application.localizedName, element.dockLabel))
+        setAccessibilityHelp(
+            getAccessibilityHelp(element.application.localizedName, element.dockLabel))
         if !windowlessIcon.isHidden {
             let windowlessIconSize = ThumbnailView.thumbnailSize(element.icon, true)
             windowlessIcon.updateWithResizedCopy(element.icon, windowlessIconSize)
@@ -372,52 +505,74 @@ class ThumbnailView: FlippedView {
         windowControlIcons.forEach { $0.window_ = element }
         showOrHideWindowControls(isShowingWindowControls)
         mouseUpCallback = { () -> Void in App.app.focusSelectedWindow(element) }
-        mouseMovedCallback = { () -> Void in Windows.updateFocusedAndHoveredWindowIndex(index, true) }
+        mouseMovedCallback = { () -> Void in Windows.updateFocusedAndHoveredWindowIndex(index, true)
+        }
     }
 
     private func updateSizes(_ newHeight: CGFloat) {
         setFrameWidthHeight(newHeight)
         if Preferences.appearanceStyle == .appIcons {
-            vStackView.frame.size = NSSize(width: frame.width, height: appIcon.frame.height + Appearance.edgeInsetsSize * 2)
+            vStackView.frame.size = NSSize(
+                width: frame.width, height: appIcon.frame.height + Appearance.edgeInsetsSize * 2)
             hStackView.frame.size = NSSize(width: appIcon.frame.width, height: appIcon.frame.height)
+            // Update background effect frame when sizes change
+            updateBackgroundEffectFrame()
         } else {
             vStackView.frame.size = NSSize(width: frame.width, height: frame.height)
-            hStackView.frame.size = NSSize(width: frame.width - Appearance.edgeInsetsSize * 2, height: max(appIcon.frame.height, label.fittingSize.height))
-            let labelWidth = hStackView.frame.width - appIcon.frame.width - Appearance.appIconLabelSpacing - indicatorsSpace()
+            hStackView.frame.size = NSSize(
+                width: frame.width - Appearance.edgeInsetsSize * 2,
+                height: max(appIcon.frame.height, label.cell!.cellSize.height))
+            let labelWidth =
+                hStackView.frame.width - appIcon.frame.width - Appearance.appIconLabelSpacing
+                - indicatorsSpace()
             label.setWidth(labelWidth)
         }
         if Preferences.appearanceStyle == .thumbnails {
             let content = !windowlessIcon.isHidden ? windowlessIcon : thumbnail
-            thumbnailContainer.frame.size = NSSize(width: hStackView.frame.width, height: content.frame.height)
+            thumbnailContainer.frame.size = NSSize(
+                width: hStackView.frame.width, height: content.frame.height)
         }
     }
 
     private func updatePositions(_ newHeight: CGFloat) {
-        hStackView.frame.origin = NSPoint(x: Appearance.edgeInsetsSize, y: Appearance.edgeInsetsSize)
+        hStackView.frame.origin = NSPoint(
+            x: Appearance.edgeInsetsSize, y: Appearance.edgeInsetsSize)
+        // Update background effect position when positions change
+        if Preferences.appearanceStyle == .appIcons {
+            updateBackgroundEffectFrame()
+        }
         if Preferences.appearanceStyle != .appIcons {
-            appIcon.frame.origin.x = App.shared.userInterfaceLayoutDirection == .leftToRight
+            appIcon.frame.origin.x =
+                App.shared.userInterfaceLayoutDirection == .leftToRight
                 ? 0
                 : hStackView.frame.width - appIcon.frame.width
-            let iconWidth = windowIndicatorIcons.first!.fittingSize.width
+            let iconWidth = windowIndicatorIcons.first!.cell!.cellSize.width
             var indicatorSpace = CGFloat(0)
             for icon in windowIndicatorIcons {
                 if !icon.isHidden {
                     indicatorSpace += iconWidth
                     icon.centerFrameInParent(y: true)
-                    icon.frame.origin.x = App.shared.userInterfaceLayoutDirection == .leftToRight
+                    icon.frame.origin.x =
+                        App.shared.userInterfaceLayoutDirection == .leftToRight
                         ? hStackView.frame.width - indicatorSpace
                         : indicatorSpace - iconWidth
                 }
             }
-            let labelWidth = hStackView.frame.width - appIcon.frame.width - Appearance.appIconLabelSpacing - indicatorSpace
-            label.frame.origin.x = App.shared.userInterfaceLayoutDirection == .leftToRight
+            let labelWidth =
+                hStackView.frame.width - appIcon.frame.width - Appearance.appIconLabelSpacing
+                - indicatorSpace
+            label.frame.origin.x =
+                App.shared.userInterfaceLayoutDirection == .leftToRight
                 ? appIcon.frame.maxX + Appearance.appIconLabelSpacing
-                : hStackView.frame.width - appIcon.frame.width - Appearance.appIconLabelSpacing - labelWidth
+                : hStackView.frame.width - appIcon.frame.width - Appearance.appIconLabelSpacing
+                    - labelWidth
             label.centerFrameInParent(y: true)
         }
         if Preferences.appearanceStyle == .thumbnails {
             let content = !windowlessIcon.isHidden ? windowlessIcon : thumbnail
-            thumbnailContainer.frame.origin = NSPoint(x: Appearance.edgeInsetsSize, y: hStackView.frame.maxY + Appearance.intraCellPadding)
+            thumbnailContainer.frame.origin = NSPoint(
+                x: Appearance.edgeInsetsSize, y: hStackView.frame.maxY + Appearance.intraCellPadding
+            )
             content.centerFrameInParent(x: true)
             var xOffset = CGFloat(3)
             var yOffset = CGFloat(2)
@@ -434,16 +589,23 @@ class ThumbnailView: FlippedView {
             if Preferences.appearanceStyle != .titles {
                 windowlessAppIndicator.centerFrameInParent(x: true)
             } else {
-                windowlessAppIndicator.frame.origin.x = ((appIcon.frame.width / 2) - (windowlessAppIndicator.frame.width / 2)).rounded()
-                    + (App.shared.userInterfaceLayoutDirection == .leftToRight ? 0 : appIcon.frame.origin.x)
+                windowlessAppIndicator.frame.origin.x =
+                    ((appIcon.frame.width / 2) - (windowlessAppIndicator.frame.width / 2)).rounded()
+                    + (App.shared.userInterfaceLayoutDirection == .leftToRight
+                        ? 0 : appIcon.frame.origin.x)
             }
-            windowlessAppIndicator.frame.origin.y = windowlessAppIndicator.superview!.frame.height - windowlessAppIndicator.frame.height + 5
+            windowlessAppIndicator.frame.origin.y =
+                windowlessAppIndicator.superview!.frame.height - windowlessAppIndicator.frame.height
+                + 5
         }
         // we set dockLabelIcon origin, without checking if .isHidden
-        // This is because its updated async. We need it positioned correctly always
-        let (offsetX, offsetY) = dockLabelOffset()
-        dockLabelIcon.frame.origin.x = appIcon.frame.maxX - (dockLabelIcon.fittingSize.width * offsetX).rounded()
-        dockLabelIcon.frame.origin.y = appIcon.frame.maxY - (dockLabelIcon.fittingSize.height * offsetY).rounded()
+        // This is because its updated async. We needed it positioned correctly always
+        let iconSize = ThumbnailView.iconSize()
+        dockLabelIcon.frame.origin.x =
+            ((iconSize.width * 0.8) - (dockLabelIcon.fittingSize.width / 2)).rounded()
+        dockLabelIcon.frame.origin.y =
+            ((iconSize.height * 0.8) - (dockLabelIcon.fittingSize.height / 2)).rounded()
+            - (Preferences.appearanceSize == .small ? 2 : 0)
     }
 
     /// positioning the dock label is messy because it's an NSTextField so it's visual size doesn't match what we can through APIs
@@ -455,7 +617,7 @@ class ThumbnailView: FlippedView {
                 offsetX = 0.82
             } else if Preferences.appearanceSize == .medium {
                 offsetX = 0.86
-            } else { // .large
+            } else {  // .large
                 offsetX = 0.92
             }
         }
@@ -465,7 +627,7 @@ class ThumbnailView: FlippedView {
                 offsetY = 0.88
             } else if Preferences.appearanceSize == .medium {
                 offsetY = 0.90
-            } else { // .large
+            } else {  // .large
                 offsetY = 0.92
             }
         }
@@ -473,7 +635,7 @@ class ThumbnailView: FlippedView {
     }
 
     private func indicatorsSpace() -> CGFloat {
-        let iconWidth = windowIndicatorIcons.first!.fittingSize.width
+        let iconWidth = windowIndicatorIcons.first!.cell!.cellSize.width
         return CGFloat(windowIndicatorIcons.filter { !$0.isHidden }.count) * iconWidth
     }
 
@@ -545,17 +707,20 @@ class ThumbnailView: FlippedView {
     }
 
     static func maxThumbnailWidth() -> CGFloat {
-        return ThumbnailsPanel.maxThumbnailsWidth() * Appearance.windowMaxWidthInRow - Appearance.interCellPadding * 2
+        return ThumbnailsPanel.maxThumbnailsWidth() * Appearance.windowMaxWidthInRow - Appearance
+            .interCellPadding * 2
     }
 
     static func widthOfComfortableReadability() -> CGFloat? {
-        let labTitleView = ThumbnailTitleView(font: Appearance.font)
-        labTitleView.stringValue = "abcdefghijklmnopqrstuvwxyz-abcdefghijklmnopqrstuvwxyz-abcdefghijklmnopqrstuvwxyz" + extraTextForPadding
+        let labTitleView = ThumbnailTitleView(shadow: nil, font: Appearance.font)
+        labTitleView.stringValue =
+            "abcdefghijklmnopqrstuvwxyz-abcdefghijklmnopqrstuvwxyz-abcdefghijklmnopqrstuvwxyz"
+            + extraTextForPadding
         return labTitleView.fittingSize.width
     }
 
     static func widthOfLongestTitle() -> CGFloat? {
-        let labTitleView = ThumbnailTitleView(font: Appearance.font)
+        let labTitleView = ThumbnailTitleView(shadow: nil, font: Appearance.font)
         var maxWidth = CGFloat(0)
         for window in Windows.list {
             guard window.shouldShowTheUser else { continue }
@@ -570,25 +735,30 @@ class ThumbnailView: FlippedView {
     }
 
     static func minThumbnailWidth() -> CGFloat {
-        return ThumbnailsPanel.maxThumbnailsWidth() * Appearance.windowMinWidthInRow - Appearance.interCellPadding * 2
+        return ThumbnailsPanel.maxThumbnailsWidth() * Appearance.windowMinWidthInRow - Appearance
+            .interCellPadding * 2
     }
 
     /// The maximum height that a thumbnail can be drawn
     /// maxThumbnailsHeight = maxThumbnailHeight * rowCount + interCellPadding * (rowCount - 1)
     /// maxThumbnailHeight = (maxThumbnailsHeight - interCellPadding * (rowCount - 1)) / rowCount
     static func maxThumbnailHeight() -> CGFloat {
-        return ((ThumbnailsPanel.maxThumbnailsHeight() - Appearance.interCellPadding) / Appearance.rowsCount - Appearance.interCellPadding).rounded()
+        return
+            ((ThumbnailsPanel.maxThumbnailsHeight() - Appearance.interCellPadding)
+            / Appearance.rowsCount - Appearance.interCellPadding).rounded()
     }
 
     static func thumbnailSize(_ image: CGImage?, _ isWindowlessApp: Bool) -> NSSize {
         guard let image else { return NSSize(width: 0, height: 0) }
         let imageWidth = CGFloat(image.width)
         let imageHeight = CGFloat(image.height)
-        let thumbnailHeightMax = ThumbnailView.maxThumbnailHeight()
+        let thumbnailHeightMax =
+            ThumbnailView.maxThumbnailHeight()
             - Appearance.edgeInsetsSize * 2
             - Appearance.intraCellPadding
             - Appearance.iconSize
-        let thumbnailWidthMax = ThumbnailView.maxThumbnailWidth()
+        let thumbnailWidthMax =
+            ThumbnailView.maxThumbnailWidth()
             - Appearance.edgeInsetsSize * 2
         // don't stretch very small windows; keep them 1:1 in the switcher
         if !isWindowlessApp && imageWidth < thumbnailWidthMax && imageHeight < thumbnailHeightMax {
@@ -634,7 +804,8 @@ class ThumbnailView: FlippedView {
         if Preferences.appearanceStyle == .titles {
             return max(ThumbnailView.iconSize().height, labelHeight) + Appearance.edgeInsetsSize * 2
         } else if Preferences.appearanceStyle == .appIcons {
-            return ThumbnailView.iconSize().height + Appearance.edgeInsetsSize * 2 + Appearance.intraCellPadding * 2 + labelHeight
+            return ThumbnailView.iconSize().height + Appearance.edgeInsetsSize * 2 + Appearance
+                .intraCellPadding * 2 + labelHeight
         }
         return ThumbnailView.maxThumbnailHeight()
     }

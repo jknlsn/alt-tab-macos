@@ -1,18 +1,17 @@
 import Cocoa
 
 class ThumbnailTitleView: NSTextField {
-    convenience init(font: NSFont) {
+    convenience init(shadow: NSShadow?, font: NSFont) {
         self.init(labelWithString: "")
         self.font = font
         textColor = Appearance.fontColor
-        // drawsBackground = true
-        // backgroundColor = .red
+        self.shadow = shadow
         allowsDefaultTighteningForTruncation = false
         translatesAutoresizingMaskIntoConstraints = false
     }
 
     func fixHeight() {
-        heightAnchor.constraint(equalToConstant: fittingSize.height).isActive = true
+        heightAnchor.constraint(equalToConstant: cell!.cellSize.height).isActive = true
     }
 
     func setWidth(_ width: CGFloat) {

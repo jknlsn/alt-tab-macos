@@ -25,9 +25,11 @@ class ThumbnailFontIconView: ThumbnailTitleView {
     }()
     var initialAttributedString: NSMutableAttributedString!
 
-    convenience init(symbol: Symbols, tooltip: String? = nil, size: CGFloat = Appearance.fontHeight, color: NSColor = Appearance.fontColor) {
+    convenience init(symbol: Symbols, tooltip: String? = nil, size: CGFloat = Appearance.fontHeight,
+                     color: NSColor = Appearance.fontColor,
+                     shadow: NSShadow? = ThumbnailView.makeShadow(Appearance.indicatedIconShadowColor)) {
         // This helps SF symbols display vertically centered and not clipped at the top
-        self.init(font: NSFont(name: "SF Pro Text", size: (size * 0.85).rounded())!)
+        self.init(shadow: shadow, font: NSFont(name: "SF Pro Text", size: (size * 0.85).rounded())!)
         initialAttributedString = NSMutableAttributedString(string: symbol.rawValue, attributes: [.paragraphStyle: ThumbnailFontIconView.paragraphStyle])
         attributedStringValue = initialAttributedString
         textColor = color
@@ -70,7 +72,7 @@ class ThumbnailFilledFontIconView: NSView {
     convenience init(_ thumbnailFontIconView: ThumbnailFontIconView, backgroundColor: NSColor, size: CGFloat) {
         self.init(frame: .zero)
         translatesAutoresizingMaskIntoConstraints = false
-        let backgroundView = ThumbnailFontIconView(symbol: .filledCircled, size: size - 3, color: backgroundColor)
+        let backgroundView = ThumbnailFontIconView(symbol: .filledCircled, size: size - 4, color: backgroundColor, shadow: nil)
         addSubview(backgroundView)
         addSubview(thumbnailFontIconView, positioned: .above, relativeTo: nil)
         backgroundView.centerXAnchor.constraint(equalTo: thumbnailFontIconView.centerXAnchor).isActive = true
