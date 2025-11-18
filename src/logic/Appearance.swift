@@ -23,7 +23,6 @@ class Appearance {
     // theme
     static var fontColor = NSColor.red
     static var imagesShadowColor = NSColor.red // for icon, thumbnail and windowless images
-    static var material = NSVisualEffectView.Material.ultraDark
     static var highlightBorderWidth = CGFloat(3)
 
     // theme: constants
@@ -32,6 +31,7 @@ class Appearance {
     static var highlightHoveredBackgroundColor: NSColor { get { NSColor.systemAccentColor.withAlphaComponent(0.1) } }
     static var highlightFocusedBorderColor: NSColor { get { NSColor.systemAccentColor } }
     static var highlightHoveredBorderColor: NSColor { get { NSColor.systemAccentColor.withAlphaComponent(0.7) } }
+    static var material = NSVisualEffectView.Material.hudWindow
 
     // derived
     static var font: NSFont {
@@ -175,12 +175,10 @@ class Appearance {
     private static func lightTheme() {
         fontColor = .black.withAlphaComponent(0.8)
         imagesShadowColor = .gray.withAlphaComponent(0.8)
-        material = .mediumLight
     }
 
     private static func darkTheme() {
         fontColor = .white.withAlphaComponent(0.85)
         imagesShadowColor = .gray.withAlphaComponent(0.8)
-        material = .dark
     }
 }
