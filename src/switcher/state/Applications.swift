@@ -70,7 +70,8 @@ class Applications {
     static func updateWindowAttributes(_ axWindow: AXUIElement, _ wid: CGWindowID, _ app: Application) {
         AXCallScheduler.shared.schedule(key: "wid-\(wid)-generic", context: app.debugId, pid: app.pid) { [weak app] in
             guard let app else { return }
-            guard wid != 0 && wid != TilesPanel.shared.windowNumber else { return }
+            guard wid != 0 else { return }
+            if let panelWindowNumber = App.currentPanel?.windowNumber, wid == panelWindowNumber { return }
             let level = wid.level()
             let isSelf = app.pid == ProcessInfo.processInfo.processIdentifier
             let keys = [kAXTitleAttribute, kAXSubroleAttribute, kAXRoleAttribute, kAXSizeAttribute, kAXPositionAttribute, kAXFullscreenAttribute, kAXMinimizedAttribute] + (isSelf ? [] : [kAXChildrenAttribute])
@@ -240,16 +241,21 @@ class Applications {
 
     static func refreshBadges_(_ items: [(URL?, String?)]) {
         Windows.list.enumerated().forEach { (i, window) in
-            let view = TilesView.recycledViews[i]
+            let tileView = i < TilesView.recycledViews.count ? TilesView.recycledViews[i] : nil
+            let commandSwitcherView = CommandSwitcherView.view(i)
             if let app = findOrCreate(window.application.pid, false) {
                 if app.runningApplication.activationPolicy == .regular,
                    let matchingItem = (items.first { $0.0 == app.bundleURL }),
                    let label = matchingItem.1 {
                     app.dockLabel = label
-                    view.updateDockLabelIcon(label)
+                    tileView?.updateDockLabelIcon(label)
+                    commandSwitcherView?.refreshDockLabel(label)
                 } else {
                     app.dockLabel = nil
-                    assignIfDifferent(&view.dockLabelIcon.isHidden, true)
+                    if let tileView {
+                        assignIfDifferent(&tileView.dockLabelIcon.isHidden, true)
+                    }
+                    commandSwitcherView?.refreshDockLabel(nil)
                 }
             }
         }

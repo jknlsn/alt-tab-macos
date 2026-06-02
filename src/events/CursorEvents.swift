@@ -74,7 +74,11 @@ class CursorEvents {
         }
         mouseDownInsideSearchField = false
         guard isPointerInsideUi() else { return nil }
-        mouseDownTarget = (findButtonUnderPointer() ?? findTileViewUnderPointer()) as AnyObject?
+        if Preferences.effectiveAppearanceStyle(SwitcherSession.activeShortcutIndex) == .commandSwitcher {
+            mouseDownTarget = findCommandSwitcherItemViewUnderPointer() as AnyObject?
+        } else {
+            mouseDownTarget = (findButtonUnderPointer() ?? findTileViewUnderPointer()) as AnyObject?
+        }
         return nil
     }
 
@@ -91,13 +95,24 @@ class CursorEvents {
         }
         let downTarget = mouseDownTarget
         mouseDownTarget = nil
-        if let button = findButtonUnderPointer(), button === downTarget {
-            button.onClick()
-            return nil
-        }
-        if let target = findTileViewUnderPointer(), target === downTarget {
-            target.mouseUpCallback()
-            return nil
+        if Preferences.effectiveAppearanceStyle(SwitcherSession.activeShortcutIndex) == .commandSwitcher {
+            if let target = findCommandSwitcherItemViewUnderPointer(), target === downTarget {
+                let index = target.indexInRecycledViews
+                Windows.updateSelectedAndHoveredWindowIndex(index)
+                if let window = target.window_ {
+                    App.focusSelectedWindow(window)
+                }
+                return nil
+            }
+        } else {
+            if let button = findButtonUnderPointer(), button === downTarget {
+                button.onClick()
+                return nil
+            }
+            if let target = findTileViewUnderPointer(), target === downTarget {
+                target.mouseUpCallback()
+                return nil
+            }
         }
         return nil
     }
@@ -130,7 +145,11 @@ class CursorEvents {
 
     private static func handleMouseMoved(_ cgEvent: CGEvent) -> Unmanaged<CGEvent>? {
         if isAllowedToReactToPointerMovement(cgEvent.location) {
-            TilesView.thumbnailOverView.updateHover()
+            if Preferences.effectiveAppearanceStyle(SwitcherSession.activeShortcutIndex) == .commandSwitcher {
+                CommandSwitcherView.updateHover()
+            } else {
+                TilesView.thumbnailOverView.updateHover()
+            }
         }
         return Unmanaged.passUnretained(cgEvent)
     }
@@ -146,11 +165,11 @@ class CursorEvents {
     }
 
     private static func pointerLocationInWindow() -> NSPoint {
-        TilesPanel.shared.mouseLocationOutsideOfEventStream
+        App.activePanel.mouseLocationOutsideOfEventStream
     }
 
     private static func isPointerInsideUi() -> Bool {
-        TilesPanel.shared.contentLayoutRect.contains(pointerLocationInWindow())
+        App.activePanel.contentLayoutRect.contains(pointerLocationInWindow())
     }
 
     private static func isPointerInsideSearchField() -> Bool {
@@ -173,6 +192,12 @@ class CursorEvents {
     private static func findTileViewUnderPointer() -> TileView? {
         let (overlay, point) = pointerInOverlay()
         return overlay.findTarget(point)
+    }
+
+    private static func findCommandSwitcherItemViewUnderPointer() -> CommandSwitcherItemView? {
+        guard let documentView = CommandSwitcherView.scrollView?.documentView else { return nil }
+        let location = documentView.convert(pointerLocationInWindow(), from: nil)
+        return CommandSwitcherView.findTarget(location)
     }
 
     /// when using the trackpad, the user may swipe with a slight mistake. This will create a small cursor movement

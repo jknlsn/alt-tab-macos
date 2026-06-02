@@ -40,7 +40,7 @@ private func logKeyboardEvent(_ globalId: Int?, _ shortcutState: ShortcutState?,
 }
 
 private func shouldAbsorbSearchEditingKeyDown(_ event: NSEvent?) -> Bool {
-    guard let event, event.type == .keyDown, SwitcherSession.isActive, TilesPanel.shared.isKeyWindow, TilesView.isSearchEditing else {
+    guard let event, event.type == .keyDown, SwitcherSession.isActive, App.currentPanel?.isKeyWindow == true, TilesView.isSearchEditing else {
         return false
     }
     return true

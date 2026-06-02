@@ -50,6 +50,58 @@ class App: AppCenterApplication {
     /// we put application code here which should be executed on init() and Preferences change
     static func resetPreferencesDependentComponents() {
         TilesView.reset()
+        CommandSwitcherView.reset()
+    }
+
+    private static var isCommandSwitcherStyle: Bool {
+        guard let session = SwitcherSession.current else {
+            return Preferences.effectiveAppearanceStyle(SwitcherSession.activeShortcutIndex) == .commandSwitcher
+        }
+        return Preferences.effectiveAppearanceStyle(session.shortcutIndex) == .commandSwitcher
+    }
+
+    static var activePanel: NSPanel {
+        if isCommandSwitcherStyle {
+            if CommandSwitcherPanel.shared == nil { _ = CommandSwitcherPanel() }
+            return CommandSwitcherPanel.shared
+        }
+        if TilesPanel.shared == nil { _ = TilesPanel() }
+        return TilesPanel.shared
+    }
+
+    static var currentPanel: NSPanel? {
+        isCommandSwitcherStyle ? CommandSwitcherPanel.shared : TilesPanel.shared
+    }
+
+    static var isCurrentPanelKeyWindow: Bool { currentPanel?.isKeyWindow == true }
+    static var currentPanelWindowNumber: Int? { currentPanel?.windowNumber }
+
+    static func updateActivePanelContents(_ preservedScrollOrigin: CGPoint?) {
+        if isCommandSwitcherStyle {
+            if CommandSwitcherPanel.shared == nil { _ = CommandSwitcherPanel() }
+            CommandSwitcherPanel.shared.updateContents(preservedScrollOrigin)
+        } else {
+            if TilesPanel.shared == nil { _ = TilesPanel() }
+            TilesPanel.shared.updateContents(preservedScrollOrigin)
+        }
+    }
+
+    static func showActivePanel() {
+        if isCommandSwitcherStyle {
+            if CommandSwitcherPanel.shared == nil { _ = CommandSwitcherPanel() }
+            CommandSwitcherPanel.shared.show()
+        } else {
+            if TilesPanel.shared == nil { _ = TilesPanel() }
+            TilesPanel.shared.show()
+        }
+    }
+
+    static func resetActivePanelFrozenPosition() {
+        if isCommandSwitcherStyle {
+            CommandSwitcherPanel.shared?.resetFrozenPosition()
+        } else {
+            TilesPanel.shared?.resetFrozenPosition()
+        }
     }
 
     static func restart() {
@@ -81,7 +133,7 @@ class App: AppCenterApplication {
     /// we don't want another window to become key when the TilesPanel is hidden
     static func hideTilesPanelWithoutChangingKeyWindow() {
         allSecondaryWindowsCanBecomeKey(false)
-        TilesPanel.shared.orderOut(nil)
+        currentPanel?.orderOut(nil)
         allSecondaryWindowsCanBecomeKey(true)
     }
 
@@ -292,10 +344,10 @@ class App: AppCenterApplication {
 
     static func refreshUi(_ preserveScrollPosition: Bool = false) {
         guard SwitcherSession.isActive else { return }
-        let preservedScrollOrigin = preserveScrollPosition ? TilesView.currentScrollOrigin() : nil
+        let preservedScrollOrigin = preserveScrollPosition ? (isCommandSwitcherStyle ? CommandSwitcherView.currentScrollOrigin() : TilesView.currentScrollOrigin()) : nil
         Windows.updateSelectedWindow()
         guard SwitcherSession.isActive else { return }
-        TilesPanel.shared.updateContents(preservedScrollOrigin)
+        updateActivePanelContents(preservedScrollOrigin)
         guard SwitcherSession.isActive else { return }
         Windows.voiceOverWindow() // at this point TileViews are assigned to the window, and ready
         guard SwitcherSession.isActive else { return }
@@ -324,7 +376,7 @@ class App: AppCenterApplication {
             // Hide instantly so the rebuild for a different shortcut (Appearance change, layout
             // recalc) is invisible. `TilesPanel.show()` flips alpha back to 1 once everything is
             // in its final state. No-op on first summon (panel was orderOut'd with alpha=0).
-            TilesPanel.shared.alphaValue = 0
+            currentPanel?.alphaValue = 0
             ProTransitionManager.shared.onSwitcherShown()
             let shouldStartInSearchMode = Preferences.effectiveShortcutStyle(shortcutIndex) == .searchOnRelease
             TilesView.startSearchSession(shouldStartInSearchMode)
@@ -358,7 +410,7 @@ class App: AppCenterApplication {
         guard SwitcherSession.isActive else { return }
         refreshUi()
         guard SwitcherSession.isActive else { return }
-        TilesPanel.shared.show()
+        showActivePanel()
         WindowThumbnails.previewSelectedIfNeeded()
         if TilesView.isSearchEditing {
             TilesView.enableSearchEditing()

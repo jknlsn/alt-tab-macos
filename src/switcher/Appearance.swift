@@ -18,7 +18,7 @@ class Appearance {
 
     // size: constants
     static let maxHeightOnScreen = CGFloat(0.8)
-    static let interCellPadding = CGFloat(1)
+    static var interCellPadding: CGFloat { currentStyle == .commandSwitcher ? 0 : 1 }
     static let intraCellPadding = CGFloat(5)
     static let appIconLabelSpacing = CGFloat(2)
 
@@ -30,10 +30,24 @@ class Appearance {
 
     // theme: constants
     static var enablePanelShadow = true
-    static var highlightFocusedBackgroundColor: NSColor { get { NSColor.systemAccentColor.withAlphaComponent(0.2) } }
-    static var highlightHoveredBackgroundColor: NSColor { get { NSColor.systemAccentColor.withAlphaComponent(0.1) } }
-    static var highlightFocusedBorderColor: NSColor { get { NSColor.systemAccentColor } }
-    static var highlightHoveredBorderColor: NSColor { get { NSColor.systemAccentColor.withAlphaComponent(0.7) } }
+    static var highlightFocusedBackgroundColor: NSColor {
+        if currentStyle == .commandSwitcher {
+            return currentTheme == .dark ? NSColor.white.withAlphaComponent(0.17) : NSColor.black.withAlphaComponent(0.11)
+        }
+        return NSColor.systemAccentColor.withAlphaComponent(0.2)
+    }
+    static var highlightHoveredBackgroundColor: NSColor {
+        if currentStyle == .commandSwitcher {
+            return currentTheme == .dark ? NSColor.white.withAlphaComponent(0.1) : NSColor.black.withAlphaComponent(0.07)
+        }
+        return NSColor.systemAccentColor.withAlphaComponent(0.1)
+    }
+    static var highlightFocusedBorderColor: NSColor {
+        currentStyle == .commandSwitcher ? .clear : NSColor.systemAccentColor
+    }
+    static var highlightHoveredBorderColor: NSColor {
+        currentStyle == .commandSwitcher ? .clear : NSColor.systemAccentColor.withAlphaComponent(0.7)
+    }
     static var searchMatchHighlightColor: NSColor { get { NSColor.systemYellow.withAlphaComponent(0.5) } }
     static var searchMatchForegroundColor: NSColor { get { NSColor(calibratedWhite: 0.12, alpha: 1) } }
 
@@ -68,6 +82,8 @@ class Appearance {
     private static func applyConcreteSize(_ size: AppearanceSizePreference, _ isHorizontalScreen: Bool) {
         if currentStyle == .appIcons {
             appIconsSize(size)
+        } else if currentStyle == .commandSwitcher {
+            commandSwitcherSize(size)
         } else if currentStyle == .titles {
             titlesSize(isHorizontalScreen, size)
         } else {
@@ -76,14 +92,14 @@ class Appearance {
     }
 
     private static func updateTheme() {
-        highlightBorderWidth = currentStyle == .titles ? 2 : 3
+        highlightBorderWidth = currentStyle == .titles ? 2 : (currentStyle == .commandSwitcher ? 0 : 3)
         if currentTheme == .dark {
             darkTheme()
         } else {
             lightTheme()
         }
         // for Liquid Glass, we don't want a shadow around the panel
-        if #available(macOS 26.0, *), currentStyle == .appIcons && LiquidGlassEffectView.canUsePrivateLiquidGlassLook() {
+        if #available(macOS 26.0, *), (currentStyle == .appIcons || currentStyle == .commandSwitcher) && LiquidGlassEffectView.canUsePrivateLiquidGlassLook() {
             enablePanelShadow = false
         } else {
             enablePanelShadow = true
@@ -157,6 +173,35 @@ class Appearance {
         }
     }
 
+    private static func commandSwitcherSize(_ size: AppearanceSizePreference) {
+        hideThumbnails = true
+        windowPadding = 10
+        windowCornerRadius = 30
+        edgeInsetsSize = 4
+        windowMinWidthInRow = 0
+        windowMaxWidthInRow = 0.3
+        rowsCount = 1
+        if #available(macOS 26.0, *) {
+            windowCornerRadius = 43
+        }
+        switch size {
+            case .small:
+                iconSize = 72
+                fontHeight = 16
+            case .medium:
+                iconSize = 104
+                fontHeight = 16
+            case .large, .auto:
+                iconSize = 140
+                fontHeight = 16
+        }
+        cellCornerRadius = max(14, commandSwitcherBackgroundSize * 0.285)
+    }
+
+    static var commandSwitcherTileSize: CGFloat { iconSize + 8 }
+    static var commandSwitcherBackgroundSize: CGFloat { iconSize * 0.95 }
+    static var commandSwitcherEdgePadding: CGFloat { max(4, (commandSwitcherTileSize - commandSwitcherBackgroundSize) / 2 + 8) }
+
     private static func titlesSize(_ isHorizontalScreen: Bool, _ size: AppearanceSizePreference) {
         hideThumbnails = true
         windowPadding = 18
@@ -181,7 +226,7 @@ class Appearance {
 
     private static func updateFont() {
         if #available(macOS 26.0, *) {
-            font = NSFont.systemFont(ofSize: fontHeight, weight: currentStyle == .appIcons ? .semibold : .medium)
+            font = NSFont.systemFont(ofSize: fontHeight, weight: (currentStyle == .appIcons || currentStyle == .commandSwitcher) ? .semibold : .medium)
         } else {
             font = NSFont.systemFont(ofSize: fontHeight)
         }

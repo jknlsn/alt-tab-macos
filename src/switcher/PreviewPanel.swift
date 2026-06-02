@@ -43,13 +43,13 @@ class PreviewPanel: NSPanel {
                 }
             }
             currentId = id
-            Self.shared.order(.below, relativeTo: TilesPanel.shared.windowNumber)
+            Self.shared.order(.below, relativeTo: App.currentPanel?.windowNumber ?? TilesPanel.shared.windowNumber)
             // Despite using `previewPanel.order(.below)`, a z-ordering issue can occur in the following scenario:
             // 1. Show a preview of a window that is on a different monitor than the thumbnails panel
             // 2. Select a window in the switcher that is on the same monitor as the thumbnails panel, and whose position overlaps with the thumbnails panel
             // 3. For a single frame, the preview of the newly selected window can appear above the thumbnails panel before going back underneath it
             // Simply using order(.below) is not sufficient to prevent this brief flicker. We explicitly set the preview panel's window level to be one below the thumbnails panel
-            Self.shared.level = NSWindow.Level(rawValue: TilesPanel.shared.level.rawValue - 1)
+            Self.shared.level = NSWindow.Level(rawValue: App.currentPanel?.level.rawValue ?? TilesPanel.shared.level.rawValue - 1)
         }
     }
 

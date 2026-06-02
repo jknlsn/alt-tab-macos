@@ -42,6 +42,11 @@ class Preferences {
             "hideThumbnails": "false",
             "hideSpaceNumberLabels": "false",
             "hideStatusIcons": "false",
+            "hideAppBadges": "false",
+            "commandSwitcherHideNonNumericBadges": "false",
+            "commandSwitcherBadgeIndicatorOnly": "false",
+            "commandSwitcherLargeBadgeStyle": CommandSwitcherLargeBadgeStylePreference.plus.indexAsString,
+            "commandSwitcherLargeBadgeDigits": CommandSwitcherLargeBadgeDigitsPreference.two.indexAsString,
             "previewFocusedWindow": "false",
             "captureWindowsInBackground": "true",
             "screenRecordingPermissionSkipped": "false",
@@ -117,6 +122,9 @@ class Preferences {
     static var previewFadeInAnimation: Bool { CachedUserDefaults.bool("previewFadeInAnimation") }
     static var hideSpaceNumberLabels: Bool { CachedUserDefaults.bool("hideSpaceNumberLabels") }
     static var hideStatusIcons: Bool { CachedUserDefaults.bool("hideStatusIcons") }
+    static var hideAppBadges: Bool { CachedUserDefaults.bool("hideAppBadges") }
+    static var commandSwitcherHideNonNumericBadges: Bool { CachedUserDefaults.bool("commandSwitcherHideNonNumericBadges") }
+    static var commandSwitcherBadgeIndicatorOnly: Bool { CachedUserDefaults.bool("commandSwitcherBadgeIndicatorOnly") }
     // periphery:ignore
     static var startAtLogin: Bool { CachedUserDefaults.bool("startAtLogin") }
     static var exceptions: [ExceptionEntry] { CachedUserDefaults.json("exceptions", [ExceptionEntry].self) }
@@ -136,6 +144,8 @@ class Preferences {
     static var showTitles: ShowTitlesPreference { CachedUserDefaults.macroPref("showTitles", ShowTitlesPreference.allCases) }
     static var updatePolicy: UpdatePolicyPreference { CachedUserDefaults.macroPref("updatePolicy", UpdatePolicyPreference.allCases) }
     static var crashPolicy: CrashPolicyPreference { CachedUserDefaults.macroPref("crashPolicy", CrashPolicyPreference.allCases) }
+    static var commandSwitcherLargeBadgeStyle: CommandSwitcherLargeBadgeStylePreference { CachedUserDefaults.macroPref("commandSwitcherLargeBadgeStyle", CommandSwitcherLargeBadgeStylePreference.allCases) }
+    static var commandSwitcherLargeBadgeDigits: CommandSwitcherLargeBadgeDigitsPreference { CachedUserDefaults.macroPref("commandSwitcherLargeBadgeDigits", CommandSwitcherLargeBadgeDigitsPreference.allCases) }
     static var appsToShow: [AppsToShowPreference] { (0...maxShortcutCount).map { CachedUserDefaults.macroPref(indexToName("appsToShow", $0), AppsToShowPreference.allCases) } }
     static var spacesToShow: [SpacesToShowPreference] { (0...maxShortcutCount).map { CachedUserDefaults.macroPref(indexToName("spacesToShow", $0), SpacesToShowPreference.allCases) } }
     static var screensToShow: [ScreensToShowPreference] { (0...maxShortcutCount).map { CachedUserDefaults.macroPref(indexToName("screensToShow", $0), ScreensToShowPreference.allCases) } }

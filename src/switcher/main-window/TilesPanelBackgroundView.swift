@@ -83,7 +83,8 @@ enum EffectViewKind {
 
 func requiredEffectViewKind() -> EffectViewKind {
     if #available(macOS 26.0, *) {
-        if Preferences.effectiveAppearanceStyle(SwitcherSession.activeShortcutIndex) == .appIcons,
+        let style = Preferences.effectiveAppearanceStyle(SwitcherSession.activeShortcutIndex)
+        if style == .appIcons || style == .commandSwitcher,
            LiquidGlassEffectView.canUsePrivateLiquidGlassLook() {
             return .liquidGlassClear
         }

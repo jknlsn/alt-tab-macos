@@ -57,7 +57,7 @@ class TilesView {
     static func endSearchSession() {
         searchField.stringValue = ""
         Windows.updateSearchQuery("")
-        TilesPanel.shared.resetFrozenPosition()
+        App.resetActivePanelFrozenPosition()
         searchMode = .off
         updateSearchFieldEditability()
     }
@@ -74,7 +74,7 @@ class TilesView {
 
     static func disableSearchMode() {
         guard searchMode != .off else { return }
-        TilesPanel.shared.resetFrozenPosition()
+        App.resetActivePanelFrozenPosition()
         searchMode = .off
         updateSearchFieldEditability()
         searchField.stringValue = ""
@@ -110,7 +110,7 @@ class TilesView {
         if wasOff {
             App.refreshUi(true)
         }
-        TilesPanel.shared.makeFirstResponder(searchField)
+        App.activePanel.makeFirstResponder(searchField)
         placeSearchCaretAtEnd()
     }
 
@@ -183,17 +183,22 @@ class TilesView {
     }
 
     private static func focusSelectedTileIfPossible() {
+        let style = Preferences.effectiveAppearanceStyle(SwitcherSession.activeShortcutIndex)
+        if style == .commandSwitcher {
+            CommandSwitcherView.focusSelectedItemIfPossible()
+            return
+        }
         let index = SwitcherSession.current?.selectedIndex ?? 0
         guard index >= 0, index < TilesView.recycledViews.count else { return }
         let tile = TilesView.recycledViews[index]
         guard tile.window_ != nil, tile.window != nil else { return }
-        TilesPanel.shared.makeFirstResponder(tile)
+        App.activePanel.makeFirstResponder(tile)
     }
 
     private static func placeSearchCaretAtEnd() {
         guard searchMode == .editing else { return }
-        if TilesPanel.shared.firstResponder !== searchField.currentEditor() {
-            TilesPanel.shared.makeFirstResponder(searchField)
+        if App.currentPanel?.firstResponder !== searchField.currentEditor() {
+            App.activePanel.makeFirstResponder(searchField)
         }
         guard let editor = searchField.currentEditor() else { return }
         let end = searchField.stringValue.utf16.count
@@ -289,6 +294,7 @@ class TilesView {
             Applications.updateAppIcons()
         }
         updateBackgroundView()
+        CommandSwitcherIconResolver.clearCache()
         TilesPanel.shared.contentView = contentView
         for i in 0..<TilesView.recycledViews.count {
             TilesView.recycledViews[i] = TileView()
@@ -303,6 +309,10 @@ class TilesView {
     }
 
     static func highlight(_ indexInRecycledViews: Int) {
+        if Preferences.effectiveAppearanceStyle(SwitcherSession.activeShortcutIndex) == .commandSwitcher {
+            CommandSwitcherView.highlight(indexInRecycledViews)
+            return
+        }
         guard indexInRecycledViews >= 0, indexInRecycledViews < recycledViews.count else { return }
         let view = recycledViews[indexInRecycledViews]
         view.indexInRecycledViews = indexInRecycledViews
@@ -346,6 +356,10 @@ class TilesView {
     }
 
     static func navigateUpOrDown(_ direction: Direction, allowWrap: Bool = true) {
+        if Preferences.effectiveAppearanceStyle(SwitcherSession.activeShortcutIndex) == .commandSwitcher {
+            CommandSwitcherView.navigateUpOrDown(direction, allowWrap: allowWrap)
+            return
+        }
         let selectedIndex = SwitcherSession.current?.selectedIndex ?? 0
         guard selectedIndex < TilesView.recycledViews.count else { return }
         let focusedViewFrame = TilesView.recycledViews[selectedIndex].frame
@@ -365,6 +379,10 @@ class TilesView {
     }
 
     static func updateItemsAndLayout(_ preservedScrollOrigin: CGPoint?) {
+        if Preferences.effectiveAppearanceStyle(SwitcherSession.activeShortcutIndex) == .commandSwitcher {
+            CommandSwitcherView.updateItemsAndLayout(preservedScrollOrigin)
+            return
+        }
         var widthMax = TilesPanel.maxThumbnailsWidth().rounded()
         if Preferences.effectiveAppearanceSize(SwitcherSession.activeShortcutIndex) == .auto {
             resolveAutoSize(widthMax)
@@ -393,6 +411,9 @@ class TilesView {
     }
 
     static func currentScrollOrigin() -> CGPoint {
+        if Preferences.effectiveAppearanceStyle(SwitcherSession.activeShortcutIndex) == .commandSwitcher {
+            return CommandSwitcherView.currentScrollOrigin()
+        }
         return scrollView.contentView.bounds.origin
     }
 
@@ -646,6 +667,10 @@ class TilesView {
     }
 
     static func clearNeedsLayout() {
+        if Preferences.effectiveAppearanceStyle(SwitcherSession.activeShortcutIndex) == .commandSwitcher {
+            CommandSwitcherView.clearNeedsLayout()
+            return
+        }
         var views = [NSView]()
         if let contentView { views.append(contentView as NSView) }
         views.append(noWindowLabel)

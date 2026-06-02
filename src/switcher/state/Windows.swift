@@ -57,15 +57,20 @@ class Windows {
     }
 
     static func voiceOverWindow(_ windowIndex: Int = (SwitcherSession.current?.selectedIndex ?? 0)) {
-        guard SwitcherSession.isActive && TilesPanel.shared.isKeyWindow else { return }
+        guard SwitcherSession.isActive && App.currentPanel?.isKeyWindow == true else { return }
         if TilesView.isSearchEditing { return }
-        // it seems that sometimes makeFirstResponder is called before the view is visible
-        // and it creates a delay in showing the main window; calling it with some delay seems to work around this
         DispatchQueue.main.asyncAfter(deadline: .now() + .milliseconds(10)) {
             if TilesView.isSearchEditing { return }
-            let window = TilesView.recycledViews[windowIndex]
-            if window.window_ != nil && window.window != nil {
-                TilesPanel.shared.makeFirstResponder(window)
+            let style = Preferences.effectiveAppearanceStyle(SwitcherSession.activeShortcutIndex)
+            if style == .commandSwitcher {
+                if let window = CommandSwitcherView.view(windowIndex), window.window_ != nil, window.window != nil {
+                    App.activePanel.makeFirstResponder(window)
+                }
+            } else {
+                let window = TilesView.recycledViews[windowIndex]
+                if window.window_ != nil && window.window != nil {
+                    App.activePanel.makeFirstResponder(window)
+                }
             }
         }
     }
@@ -292,6 +297,9 @@ class Windows {
         guard shouldDisplay(list[newIndex]) else { return }
         var index: Int?
         if fromMouse && (newIndex != session.hoveredIndex || lastWindowActivityType == .focus) {
+            if Preferences.effectiveAppearanceStyle(SwitcherSession.activeShortcutIndex) == .commandSwitcher {
+                CommandSwitcherView.recordHoverChange()
+            }
             let oldIndex = session.hoveredIndex
             session.hoveredIndex = newIndex
             if let oldIndex {
@@ -301,10 +309,18 @@ class Windows {
             lastWindowActivityType = .hover
         }
         if !fromMouse {
-            TilesView.thumbnailOverView.resetHoveredWindow()
+            let style = Preferences.effectiveAppearanceStyle(SwitcherSession.activeShortcutIndex)
+            if style == .commandSwitcher {
+                CommandSwitcherView.resetHoveredWindow()
+            } else {
+                TilesView.thumbnailOverView.resetHoveredWindow()
+            }
         }
         if (!fromMouse || Preferences.mouseHoverEnabled)
                && (newIndex != session.selectedIndex || lastWindowActivityType == .hover) {
+            if Preferences.effectiveAppearanceStyle(SwitcherSession.activeShortcutIndex) == .commandSwitcher {
+                CommandSwitcherView.recordSelectionChange()
+            }
             let oldIndex = session.selectedIndex
             session.selectedIndex = newIndex
             session.selectedTarget = list[newIndex].id
@@ -315,8 +331,14 @@ class Windows {
         }
         guard let index else { return }
         TilesView.highlight(index)
-        let focusedView = TilesView.recycledViews[index]
-        TilesView.scrollView.contentView.scrollToVisible(focusedView.frame)
+        if Preferences.effectiveAppearanceStyle(SwitcherSession.activeShortcutIndex) == .commandSwitcher {
+            if let focusedView = CommandSwitcherView.view(index), let scrollView = CommandSwitcherView.scrollView {
+                scrollView.contentView.scrollToVisible(focusedView.frame)
+            }
+        } else {
+            let focusedView = TilesView.recycledViews[index]
+            TilesView.scrollView.contentView.scrollToVisible(focusedView.frame)
+        }
         voiceOverWindow(index)
     }
 
@@ -477,6 +499,9 @@ class Windows {
         }
         if list.count > TilesView.recycledViews.count {
             TilesView.recycledViews.append(TileView())
+        }
+        if Preferences.effectiveAppearanceStyle(SwitcherSession.activeShortcutIndex) == .commandSwitcher {
+            CommandSwitcherView.ensureRecycledViews()
         }
     }
 

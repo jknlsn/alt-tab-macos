@@ -58,6 +58,7 @@ extension HardGateReason {
             case .appIcons: return .appIconsStyle
             case .titles: return .titlesStyle
             case .thumbnails: return .nonEngaged
+            case .commandSwitcher: return .nonEngaged
             }
         case .proPreferences(let appearanceStyle, let shortcut):
             if shortcut { return .search }
@@ -65,6 +66,7 @@ extension HardGateReason {
             case .appIcons: return .appIconsStyle
             case .titles: return .titlesStyle
             case .thumbnails, nil: return .nonEngaged
+            case .commandSwitcher: return .nonEngaged
             }
         case .feature(.autoSize):
             return .nonEngaged

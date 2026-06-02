@@ -285,12 +285,14 @@ enum AppearanceStylePreference: CaseIterable, ImageMacroPreference {
     case thumbnails
     case appIcons
     case titles
+    case commandSwitcher
 
     var localizedString: LocalizedString {
         switch self {
             case .thumbnails: return NSLocalizedString("Thumbnails", comment: "")
             case .appIcons: return NSLocalizedString("App Icons", comment: "")
             case .titles: return NSLocalizedString("Titles", comment: "")
+            case .commandSwitcher: return NSLocalizedString("Command Switcher", comment: "")
         }
     }
 
@@ -301,6 +303,7 @@ enum AppearanceStylePreference: CaseIterable, ImageMacroPreference {
             case .thumbnails: return WidthHeightImage(width: width, height: height, name: "thumbnails")
             case .appIcons: return WidthHeightImage(width: width, height: height, name: "app_icons")
             case .titles: return WidthHeightImage(width: width, height: height, name: "titles")
+            case .commandSwitcher: return WidthHeightImage(width: width, height: height, name: "command_switcher")
         }
     }
 }
@@ -471,3 +474,37 @@ struct ThemeParameters {
 }
 
 typealias LocalizedString = String
+
+enum CommandSwitcherLargeBadgeStylePreference: CaseIterable, MacroPreference {
+    case plus
+    case star
+
+    var localizedString: LocalizedString {
+        switch self {
+            case .plus: return NSLocalizedString("Plus", comment: "")
+            case .star: return NSLocalizedString("Star", comment: "")
+        }
+    }
+}
+
+enum CommandSwitcherLargeBadgeDigitsPreference: CaseIterable, MacroPreference {
+    case one
+    case two
+    case three
+
+    var localizedString: LocalizedString {
+        switch self {
+            case .one: return NSLocalizedString("1 digit", comment: "")
+            case .two: return NSLocalizedString("2 digits", comment: "")
+            case .three: return NSLocalizedString("3 digits", comment: "")
+        }
+    }
+
+    var threshold: Int {
+        switch self {
+            case .one: return 9
+            case .two: return 99
+            case .three: return 999
+        }
+    }
+}

@@ -70,6 +70,8 @@ class TileFontIconView: NSView {
         static let containerFromIconRatio = CGFloat(0.43)
         static let textFromContainerRatio = CGFloat(0.57)
         static let minContainerHeight = CGFloat(11)
+        static let commandSwitcherContainerHeight = CGFloat(40)
+        static let commandSwitcherTextHeight = CGFloat(24)
         static let minTextHeight = CGFloat(8)
         static let maxTextHeight = CGFloat(18)
         static let horizontalPaddingRatio = CGFloat(0.10)
@@ -86,7 +88,10 @@ class TileFontIconView: NSView {
     static var symbolCache = [SymbolCacheKey: NSAttributedString]()
 
     static func badgeBaseSize(forIconSize iconSize: CGFloat) -> CGFloat {
-        max((iconSize * BadgeSizing.containerFromIconRatio).rounded(), BadgeSizing.minContainerHeight)
+        if Preferences.effectiveAppearanceStyle(SwitcherSession.activeShortcutIndex) == .commandSwitcher {
+            return BadgeSizing.commandSwitcherContainerHeight
+        }
+        return max((iconSize * BadgeSizing.containerFromIconRatio).rounded(), BadgeSizing.minContainerHeight)
     }
 
     private let rendering: Rendering
@@ -112,8 +117,9 @@ class TileFontIconView: NSView {
     convenience init(badgeSize: CGFloat,
                      fillColor: NSColor = NSColor(srgbRed: 1, green: 0.25, blue: 0.2, alpha: 0.9),
                      textColor: NSColor = .white) {
-        self.init(rendering: .badge, initialText: "0", size: badgeSize, symbolColor: .clear, badgeFillColor: fillColor, badgeTextColor: textColor)
-        frame.size = badgeFrameSize(textWidth: maxBadgeTextWidth(), text: String(repeating: "8", count: BadgeSizing.maxDigits))
+        let resolvedFillColor = Preferences.effectiveAppearanceStyle(SwitcherSession.activeShortcutIndex) == .commandSwitcher ? NSColor(srgbRed: 1, green: 0.3, blue: 0.25, alpha: 1) : fillColor
+        self.init(rendering: .badge, initialText: "0", size: badgeSize, symbolColor: .clear, badgeFillColor: resolvedFillColor, badgeTextColor: textColor)
+        frame.size = badgeHostFrameSize(for: initialBadgeHostText())
     }
 
     init(rendering: Rendering,
@@ -131,7 +137,7 @@ class TileFontIconView: NSView {
         let badgeMetrics = Self.badgeMetrics(size)
         badgeContainerHeight = badgeMetrics.containerHeight
         badgeHorizontalPadding = Self.badgeHorizontalPadding(badgeMetrics.containerHeight)
-        badgeFont = NSFont.systemFont(ofSize: badgeMetrics.textHeight)
+        badgeFont = Self.makeBadgeFont(badgeMetrics.textHeight)
         text = initialText
         super.init(frame: .zero)
         cachedSymbolAttributedString = rendering == .symbol ? cachedSymbolText(initialText) : nil
@@ -197,6 +203,8 @@ class TileFontIconView: NSView {
         } else {
             cachedBadgeAttributedString = badgeAttributedText(newText)
             cachedBadgeTextSize = cachedBadgeAttributedString!.size()
+            frame.size = badgeHostFrameSize(for: newText)
+            invalidateIntrinsicContentSize()
         }
         needsDisplay = true
     }
@@ -207,15 +215,25 @@ class TileFontIconView: NSView {
     }
 
     private func drawBadge() {
-        let badgeRect = anchoredBadgeRect()
+        let badgeRect = insetBadgeRectIfNeeded(anchoredBadgeRect())
         let innerRect = badgeRect
         let innerPath = NSBezierPath(roundedRect: innerRect, xRadius: innerRect.height / 2, yRadius: innerRect.height / 2)
         badgeFillColor.setFill()
         innerPath.fill()
+        if Preferences.effectiveAppearanceStyle(SwitcherSession.activeShortcutIndex) == .commandSwitcher {
+            NSColor.white.withAlphaComponent(0.9).setStroke()
+            innerPath.lineWidth = 1
+            innerPath.stroke()
+        }
         guard let cachedBadgeAttributedString else { return }
         let textSize = cachedBadgeTextSize
-        let textPoint = NSPoint(x: innerRect.midX - textSize.width / 2, y: innerRect.midY - textSize.height / 2)
+        let textPoint = NSPoint(x: (innerRect.midX - textSize.width / 2).rounded(), y: (innerRect.midY - textSize.height / 2).rounded())
         cachedBadgeAttributedString.draw(at: textPoint)
+    }
+
+    private func insetBadgeRectIfNeeded(_ rect: NSRect) -> NSRect {
+        guard Preferences.effectiveAppearanceStyle(SwitcherSession.activeShortcutIndex) == .commandSwitcher else { return rect }
+        return rect.insetBy(dx: 0.5, dy: 0.5)
     }
 
     private func anchoredBadgeRect() -> NSRect {
@@ -229,12 +247,30 @@ class TileFontIconView: NSView {
 
     private func badgeFrameSize(textWidth: CGFloat, text: String) -> NSSize {
         let height = badgeContainerHeight
+        let style = Preferences.effectiveAppearanceStyle(SwitcherSession.activeShortcutIndex)
+        if style == .commandSwitcher {
+            if text == "•" {
+                return NSSize(width: ceil(height), height: ceil(height))
+            }
+            let horizontalPadding: CGFloat = text.count > 1 ? 11 : 9
+            let width = max(height, textWidth + horizontalPadding * 2)
+            return NSSize(width: ceil(width), height: ceil(height))
+        }
         var width = max(height, textWidth + badgeHorizontalPadding * 2)
-        if Preferences.effectiveAppearanceStyle(SwitcherSession.activeShortcutIndex) == .appIcons, text.count > 1 {
+        if style == .appIcons, text.count > 1 {
             let minRectWidth = (height * BadgeSizing.appIconsMinRectWidthRatio).rounded(.up)
             width = max(width, minRectWidth)
         }
         return NSSize(width: ceil(width), height: ceil(height))
+    }
+
+    private func initialBadgeHostText() -> String {
+        Preferences.effectiveAppearanceStyle(SwitcherSession.activeShortcutIndex) == .commandSwitcher ? "0" : String(repeating: "8", count: BadgeSizing.maxDigits)
+    }
+
+    private func badgeHostFrameSize(for text: String) -> NSSize {
+        let width = Preferences.effectiveAppearanceStyle(SwitcherSession.activeShortcutIndex) == .commandSwitcher ? badgeTextWidth(text) : maxBadgeTextWidth()
+        return badgeFrameSize(textWidth: width, text: text)
     }
 
     private func badgeAttributedText(_ value: String) -> NSAttributedString {
@@ -255,6 +291,9 @@ class TileFontIconView: NSView {
     }
 
     private static func badgeMetrics(_ size: CGFloat) -> BadgeMetrics {
+        if Preferences.effectiveAppearanceStyle(SwitcherSession.activeShortcutIndex) == .commandSwitcher {
+            return BadgeMetrics(containerHeight: BadgeSizing.commandSwitcherContainerHeight, textHeight: BadgeSizing.commandSwitcherTextHeight)
+        }
         let rawContainerHeight = max(BadgeSizing.minContainerHeight, size.rounded())
         let textHeight = badgeTextHeight(fromRawContainerHeight: rawContainerHeight)
         let compactContainerHeight = (textHeight / BadgeSizing.textFromContainerRatio).rounded(.up)
@@ -278,5 +317,15 @@ class TileFontIconView: NSView {
 
     static func symbolColorKey(_ color: NSColor) -> String {
         (color.usingColorSpace(.deviceRGB) ?? color).description
+    }
+
+    private static func makeBadgeFont(_ size: CGFloat) -> NSFont {
+        guard Preferences.effectiveAppearanceStyle(SwitcherSession.activeShortcutIndex) == .commandSwitcher else {
+            return NSFont.systemFont(ofSize: size)
+        }
+        if #available(macOS 26.0, *) {
+            return NSFont.systemFont(ofSize: size, weight: .bold)
+        }
+        return NSFont.systemFont(ofSize: size)
     }
 }

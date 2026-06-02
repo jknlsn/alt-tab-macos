@@ -6,7 +6,7 @@ enum WindowThumbnails {
     static func previewSelectedIfNeeded() {
         if let session = SwitcherSession.current, ScreenRecordingPermission.status == .granted
                && Preferences.effectivePreviewSelectedWindow(session.shortcutIndex) && !Preferences.onlyShowApplications(session.shortcutIndex)
-               && TilesPanel.shared.isKeyWindow,
+               && App.currentPanel?.isKeyWindow == true,
            let window = Windows.selectedWindow(),
            let id = window.cgWindowId,
            let thumbnail = window.thumbnail,

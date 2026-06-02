@@ -33,7 +33,7 @@ class AccessibilityEvents {
         } else {
             let wid = (try? element.cgWindowId()) ?? 0
             guard wid != 0 || type == kAXUIElementDestroyedNotification,
-                  wid != TilesPanel.shared.windowNumber else { return }
+                  App.currentPanel.map({ UInt32($0.windowNumber) }) != wid else { return }
             if type == kAXUIElementDestroyedNotification {
                 DispatchQueue.main.async {
                     Logger.info { "\(type) wid:\(wid) pid:\(pid)" }
